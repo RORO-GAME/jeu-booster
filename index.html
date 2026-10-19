@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boosters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --nuit: #0e1822;
+  --surface: #162534;
+  --ligne: #2a3f52;
+  --texte: #e9eef3;
+  --doux: #8da1b3;
+  --c0: #9aa7b3;  /* commune */
+  --c1: #4cc38a;  /* peu commune */
+  --c2: #4c9bff;  /* rare */
+  --c3: #a66bff;  /* ultra rare */
+  --c4: #ffc247;  /* légendaire */
+}
+[data-r="0"] { --c: var(--c0); }
+[data-r="1"] { --c: var(--c1); }
+[data-r="2"] { --c: var(--c2); }
+[data-r="3"] { --c: var(--c3); }
+[data-r="4"] { --c: var(--c4); }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--nuit); }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--texte);
+  font-family: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  background: radial-gradient(1100px 520px at 50% -8%, #1d3347, transparent) no-repeat, var(--nuit);
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--texte); outline-offset: 3px; }
+
+.page { max-width: 1000px; margin: 0 auto; padding: 0 16px 48px; }
+
+/* ---------- en-tête ---------- */
+.entete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px 32px; padding: 28px 0 20px; }
+h1 { margin: 0; font-size: clamp(40px, 9vw, 64px); line-height: 1; font-weight: 800; letter-spacing: -0.035em; }
+.sous { margin: 6px 0 0; color: var(--doux); }
+.stats { display: flex; gap: 28px; margin: 0; }
+.stats dt { font-size: 13px; color: var(--doux); }
+.stats dd { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.2; }
+.stats .garantie dd { font-size: 15px; font-weight: 600; }
+.jauge { height: 4px; margin-top: 7px; border-radius: 2px; background: var(--ligne); overflow: hidden; }
+.jauge span { display: block; height: 100%; width: 0; background: var(--texte); transition: width .5s ease; }
+.jauge.large { height: 6px; }
+
+/* ---------- onglets ---------- */
+.onglets { display: flex; gap: 4px; border-bottom: 1px solid var(--ligne); }
+.onglets button { padding: 10px 14px; background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; color: var(--doux); cursor: pointer; font-weight: 600; }
+.onglets button[aria-selected="true"] { color: var(--texte); border-bottom-color: var(--texte); }
+.onglets button:disabled { opacity: .45; cursor: default; }
+
+/* ---------- scène du booster ---------- */
+.scene { display: grid; place-items: center; min-height: clamp(360px, 60vw, 500px); padding: 28px 0 8px; }
+.pack {
+  position: relative; width: clamp(170px, 40vw, 224px); aspect-ratio: 5 / 7;
+  border: 0; border-radius: 10px; cursor: pointer; color: #fff; overflow: hidden;
+  background: linear-gradient(125deg, #2c4a63, #6f98b8 38%, #2c4a63 56%, #1f3649);
+  box-shadow: 0 24px 40px -20px rgba(0, 0, 0, .8), inset 0 0 0 1px rgba(255, 255, 255, .18);
+  transition: transform .25s ease;
+}
+.pack:hover:not(:disabled) { transform: translateY(-6px) rotate(-1.2deg); }
+.pack:disabled { cursor: progress; filter: saturate(.4) brightness(.8); }
+.pack::before, .pack::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 16px;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .28) 0 3px, rgba(0, 0, 0, .25) 3px 6px);
+}
+.pack::before { top: 0; }
+.pack::after { bottom: 0; }
+.pack-centre { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 4px; }
+.pack-titre { font-size: clamp(30px, 7.5vw, 40px); font-weight: 800; letter-spacing: -0.03em; text-shadow: 0 2px 10px rgba(0, 0, 0, .35); }
+.pack-nb { font-size: 14px; opacity: .85; }
+.pack-points { position: absolute; left: 0; right: 0; bottom: 30px; display: flex; justify-content: center; gap: 7px; }
+.pack-points span { width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 1px rgba(255, 255, 255, .6); }
+.pack.ouvre { animation: secoue .95s ease-in forwards; pointer-events: none; }
+@keyframes secoue {
+  0%   { transform: rotate(0); }
+  12%  { transform: rotate(-4deg) translateX(-4px); }
+  24%  { transform: rotate(4deg) translateX(4px); }
+  36%  { transform: rotate(-5deg) translateX(-3px); }
+  48%  { transform: rotate(5deg) scale(1.03); }
+  62%  { transform: scale(1.1); filter: brightness(1.3); }
+  100% { transform: scale(1.55); opacity: 0; filter: brightness(2.6); }
+}
+
+/* ---------- cartes ---------- */
+.rangee { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
+.carte {
+  position: relative; width: clamp(100px, 28vw, 172px); aspect-ratio: 5 / 7;
+  padding: 0; border: 0; background: none; cursor: pointer; perspective: 900px;
+}
+.flip { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .6s cubic-bezier(.3, .7, .2, 1); }
+.carte.retournee .flip { transform: rotateY(180deg); }
+.carte.retournee { cursor: default; }
+.carte.eclat { filter: drop-shadow(0 0 14px color-mix(in srgb, var(--c) 70%, transparent)); }
+.rangee.distribue .carte { animation: donne .6s cubic-bezier(.2, .8, .2, 1) both; animation-delay: var(--delai); }
+@keyframes donne { from { opacity: 0; transform: translateY(70px) scale(.9) rotate(-5deg); } }
+
+.face { position: absolute; inset: 0; container-type: inline-size; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.verso {
+  border: 2px solid #3d5a73; border-radius: 8% / 5.714%;
+  background:
+    radial-gradient(circle at 50% 50%, #3a5d79 0 14%, transparent 15%),
+    repeating-linear-gradient(45deg, #1a2f40 0 10px, #213c52 10px 20px);
+}
+.recto { transform: rotateY(180deg); }
+
+.cadre {
+  position: absolute; inset: 0; display: flex; flex-direction: column; gap: 4cqw; padding: 6cqw;
+  border: 1.8cqw solid var(--c); border-radius: 8cqw; overflow: hidden; text-align: left;
+  background: linear-gradient(170deg, color-mix(in srgb, var(--c) 20%, #0f1a24), #0d1620 70%);
+}
+.haut { display: flex; justify-content: space-between; align-items: baseline; gap: 2cqw; }
+.rar { font-size: 8.5cqw; font-weight: 700; color: var(--c); }
+.num { font-size: 8cqw; color: var(--doux); }
+.visuel { flex: 1; min-height: 0; overflow: hidden; border-radius: 4cqw; background: color-mix(in srgb, var(--c) 12%, #0b131b); }
+.visuel img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.visuel.sans-image {
+  display: grid; place-items: center;
+  background:
+    repeating-linear-gradient(135deg, color-mix(in srgb, var(--c) 20%, transparent) 0 2cqw, transparent 2cqw 6cqw),
+    color-mix(in srgb, var(--c) 10%, #0b131b);
+}
+.grand { font-size: 32cqw; font-weight: 800; line-height: 1; color: var(--c); letter-spacing: -0.04em; }
+.nom { font-size: 10.5cqw; font-weight: 700; line-height: 1.15; }
+.recto[data-r="4"] .cadre { box-shadow: inset 0 0 7cqw color-mix(in srgb, var(--c) 45%, transparent); }
+
+.holo {
+  position: absolute; inset: 0; border-radius: 8cqw; pointer-events: none; mix-blend-mode: soft-light;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .95) 48%, transparent 66%);
+  background-size: 260% 100%; background-position: 130% 0;
+  animation: brille 4.5s ease-in-out infinite;
+}
+@keyframes brille { to { background-position: -30% 0; } }
+
+.badge {
+  position: absolute; top: -3.5cqw; left: 50%; transform: translateX(-50%);
+  padding: .35em .9em; border-radius: 999px; white-space: nowrap;
+  background: var(--texte); color: var(--nuit); font-size: 8cqw; font-weight: 700;
+}
+.badge.nb { left: auto; right: 5cqw; transform: none; }
+
+.recto.manquante .cadre { border-style: dashed; border-color: var(--ligne); background: #0c141c; }
+.recto.manquante .rar, .recto.manquante .nom { color: var(--doux); }
+.recto.manquante .grand { color: var(--ligne); }
+.recto.manquante .visuel { background: #0a1118; }
+
+#flash { position: fixed; inset: 0; z-index: 10; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--c, #fff) 55%, transparent), transparent 62%); }
+#flash.on { animation: eclair .8s ease-out; }
+@keyframes eclair { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ---------- messages et boutons ---------- */
+.message { min-height: 3em; margin: 12px auto 0; max-width: 56ch; text-align: center; color: var(--doux); }
+.actions { display: flex; justify-content: center; gap: 12px; min-height: 48px; }
+.btn { padding: 11px 20px; border: 0; border-radius: 10px; background: var(--texte); color: var(--nuit); font-weight: 700; cursor: pointer; }
+.btn:hover { background: #fff; }
+.btn.discret { background: none; color: var(--doux); padding: 0; font-weight: 500; text-decoration: underline; border-radius: 0; }
+.btn.discret:hover { background: none; color: var(--texte); }
+
+/* ---------- collection ---------- */
+.coll-tete { padding: 24px 0 8px; }
+h2 { margin: 0 0 8px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+.filtres { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0 20px; }
+.filtres button { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--ligne); background: none; cursor: pointer; font-size: 14px; }
+.filtres button[data-r]::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+.filtres button[aria-pressed="true"] { background: var(--surface); border-color: var(--texte); }
+.grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 16px 12px; }
+.carte-fixe { position: relative; aspect-ratio: 5 / 7; }
+.carte-fixe .recto { transform: none; }
+
+footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--ligne); color: var(--doux); font-size: 14px; }
+footer p { margin: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="entete">
+    <div>
+      <h1>Boosters</h1>
+      <p class="sous">Ouvre des boosters et complète ta collection.</p>
+    </div>
+    <dl class="stats">
+      <div><dt>Boosters ouverts</dt><dd id="st-ouverts">0</dd></div>
+      <div class="garantie">
+        <dt>Rare ou mieux garanti</dt>
+        <dd id="st-garantie">…</dd>
+        <div class="jauge"><span id="jauge"></span></div>
+      </div>
+    </dl>
+  </header>
+
+  <nav class="onglets" role="tablist" aria-label="Sections">
+    <button type="button" role="tab" id="t-boosters" aria-selected="true" aria-controls="v-boosters">Booster</button>
+    <button type="button" role="tab" id="t-collection" aria-selected="false" aria-controls="v-collection" disabled>Collection <span id="t-compte"></span></button>
+  </nav>
+
+  <main>
+    <section id="v-boosters" role="tabpanel" aria-labelledby="t-boosters">
+      <div class="scene">
+        <button type="button" class="pack" id="pack" disabled aria-label="Ouvrir un booster">
+          <span class="pack-centre">
+            <span class="pack-titre">Booster</span>
+            <span class="pack-nb" id="pack-nb"></span>
+          </span>
+          <span class="pack-points" id="pack-points" aria-hidden="true"></span>
+        </button>
+        <div class="rangee" id="rangee" hidden></div>
+      </div>
+      <p class="message" id="message" aria-live="polite">Chargement du moteur Python…</p>
+      <div class="actions">
+        <button type="button" class="btn" id="btn-tout" hidden>Tout retourner</button>
+        <button type="button" class="btn" id="btn-autre" hidden>Ouvrir un autre booster</button>
+      </div>
+    </section>
+
+    <section id="v-collection" role="tabpanel" aria-labelledby="t-collection" hidden>
+      <div class="coll-tete">
+        <h2 id="coll-titre"></h2>
+        <div class="jauge large"><span id="coll-jauge"></span></div>
+      </div>
+      <div class="filtres" id="filtres" role="group" aria-label="Filtrer par rareté"></div>
+      <div class="grille" id="grille"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Ta collection est enregistrée dans ce navigateur.</p>
+    <button type="button" class="btn discret" id="reset">Effacer ma collection</button>
+  </footer>
+</div>
+<div id="flash"></div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script>
+"use strict";
+
+const CLE = "boosters-sauvegarde-v1";
+const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = (s) => document.querySelector(s);
+const attendre = (ms) => new Promise((ok) => setTimeout(ok, ms));
+const pad = (n) => String(n).padStart(2, "0");
+const pluriel = (n, un, plusieurs) => n + " " + (n > 1 ? plusieurs : un);
+
+function el(tag, cls, texte) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (texte !== undefined) n.textContent = texte;
+  return n;
+}
+
+let REGL = null;          // réglages venus de moteur.py
+let CARTES = [];          // contenu de cartes.json
+let CARTES_TXT = "";
+let ouvrirPy = null;      // fonction Python ouvrir_booster_web
+let etat = null;          // progression du joueur
+let phase = "chargement"; // chargement | pret | ouverture | reveal | fini
+let tirage = [];
+let retournees = 0;
+let garantieDeclenchee = false;
+let filtre = -1;
+
+const rang = (c) => REGL.ordre.indexOf(c.rarete);
+
+/* ---------- sauvegarde dans le navigateur ---------- */
+function lireSauvegarde() {
+  try {
+    const t = localStorage.getItem(CLE);
+    if (!t) return null;
+    const e = JSON.parse(t);
+    if (e && typeof e.collection === "object" && Number.isFinite(e.boosters_ouverts) && Number.isFinite(e.sans_rare)) return e;
+  } catch (_) { /* navigateur sans stockage : on repart de zéro */ }
+  return null;
+}
+function ecrireSauvegarde() {
+  try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch (_) { /* pas de sauvegarde possible */ }
+}
+
+/* ---------- dessin d'une carte ---------- */
+function faceCarte(c, o = {}) {
+  const r = rang(c);
+  const f = el("div", "face recto" + (o.manquante ? " manquante" : ""));
+  f.dataset.r = r;
+  const cadre = el("div", "cadre");
+  const haut = el("div", "haut");
+  haut.append(el("span", "rar", o.manquante ? "?" : c.rarete), el("span", "num", "n° " + pad(c.id)));
+  const visuel = el("div", "visuel");
+  if (o.manquante) {
+    visuel.classList.add("sans-image");
+    visuel.append(el("span", "grand", "?"));
+  } else {
+    const img = new Image();
+    img.alt = "";
+    img.src = c.image;
+    img.addEventListener("error", () => {
+      img.remove();
+      visuel.classList.add("sans-image");
+      visuel.append(el("span", "grand", pad(c.id)));
+    });
+    visuel.append(img);
+  }
+  cadre.append(haut, visuel, el("div", "nom", o.manquante ? "Pas encore trouvée" : c.nom));
+  f.append(cadre);
+  if (!o.manquante && r >= 3) f.append(el("div", "holo"));
+  if (o.nouvelle) f.append(el("span", "badge", "Nouvelle"));
+  if (o.nb > 1) f.append(el("span", "badge nb", "×" + o.nb));
+  return f;
+}
+
+function carteBooster(c, i) {
+  const b = el("button", "carte");
+  b.type = "button";
+  b.dataset.r = rang(c);
+  b.style.setProperty("--delai", i * 110 + "ms");
+  b.setAttribute("aria-label", `Carte ${i + 1} sur ${tirage.length}, face cachée. Retourner.`);
+  const flip = el("span", "flip");
+  flip.append(el("span", "face verso"), faceCarte(c, { nouvelle: c.nouvelle }));
+  b.append(flip);
+  b.addEventListener("click", () => retourner(b, c));
+  return b;
+}
+
+/* ---------- ouverture d'un booster ---------- */
+function flash(r) {
+  if (reduit) return;
+  const f = $("#flash");
+  f.style.setProperty("--c", `var(--c${r})`);
+  f.classList.remove("on");
+  void f.offsetWidth;
+  f.classList.add("on");
+}
+
+function majMessage() {
+  const m = $("#message");
+  if (phase === "pret") {
+    m.textContent = "Clique sur le booster pour l'ouvrir.";
+  } else if (phase === "ouverture") {
+    m.textContent = "";
+  } else if (phase === "reveal") {
+    m.textContent = `Retourne les cartes une par une. ${retournees} sur ${tirage.length} retournées.`;
+  } else if (phase === "fini") {
+    const n = tirage.filter((c) => c.nouvelle).length;
+    let t = n ? `${pluriel(n, "nouvelle carte", "nouvelles cartes")} dans ce booster.` : "Que des doublons dans ce booster.";
+    if (garantieDeclenchee) t += " La garantie s'est déclenchée : une carte rare ou mieux t'était réservée.";
+    m.textContent = t;
+  }
+}
+
+async function ouvrir() {
+  if (phase !== "pret") return;
+  phase = "ouverture";
+  majMessage();
+  let res;
+  try {
+    res = JSON.parse(ouvrirPy(CARTES_TXT, JSON.stringify(etat)));
+  } catch (e) {
+    console.error(e);
+    phase = "pret";
+    $("#message").textContent = "Le tirage a échoué : " + (e.message || e);
+    return;
+  }
+  etat = res.etat;
+  tirage = res.cartes;
+  garantieDeclenchee = res.pitie;
+  retournees = 0;
+  ecrireSauvegarde();
+  majStats();
+
+  const pack = $("#pack");
+  pack.classList.add("ouvre");
+  await attendre(reduit ? 0 : 950);
+  pack.hidden = true;
+
+  const rangee = $("#rangee");
+  rangee.replaceChildren(...tirage.map(carteBooster));
+  rangee.hidden = false;
+  rangee.classList.add("distribue");
+  phase = "reveal";
+  majMessage();
+  $("#btn-tout").hidden = false;
+  rangee.firstElementChild.focus({ preventScroll: true });
+}
+
+function retourner(b, c) {
+  if (phase !== "reveal" || b.classList.contains("retournee")) return;
+  b.classList.add("retournee");
+  b.setAttribute("aria-label", `${c.nom}, ${c.rarete}${c.nouvelle ? ", nouvelle" : ""}`);
+  retournees++;
+  const r = rang(c);
+  if (r >= 2) b.classList.add("eclat");
+  if (r >= 3) flash(r);
+  if (retournees === tirage.length) terminer();
+  else majMessage();
+}
+
+async function toutRetourner() {
+  if (phase !== "reveal") return;
+  $("#btn-tout").hidden = true;
+  const cartes = [...$("#rangee").children];
+  for (let i = 0; i < cartes.length; i++) {
+    if (!cartes[i].classList.contains("retournee")) {
+      retourner(cartes[i], tirage[i]);
+      await attendre(reduit ? 0 : 260);
+    }
+  }
+}
+
+function terminer() {
+  phase = "fini";
+  $("#btn-tout").hidden = true;
+  $("#btn-autre").hidden = false;
+  $("#btn-autre").focus({ preventScroll: true });
+  majMessage();
+  majCollection();
+}
+
+function autreBooster() {
+  const rangee = $("#rangee");
+  rangee.hidden = true;
+  rangee.replaceChildren();
+  rangee.classList.remove("distribue");
+  const pack = $("#pack");
+  pack.classList.remove("ouvre");
+  pack.hidden = false;
+  $("#btn-tout").hidden = true;
+  $("#btn-autre").hidden = true;
+  phase = "pret";
+  majMessage();
+  pack.focus({ preventScroll: true });
+}
+
+/* ---------- statistiques et collection ---------- */
+function majStats() {
+  $("#st-ouverts").textContent = etat.boosters_ouverts;
+  const restant = Math.max(REGL.pitie_apres - etat.sans_rare, 0) + 1;
+  $("#st-garantie").textContent = `dans ${pluriel(restant, "booster", "boosters")} au plus`;
+  $("#jauge").style.width = Math.min(etat.sans_rare / REGL.pitie_apres, 1) * 100 + "%";
+}
+
+function majCollection() {
+  const nb = (c) => etat.collection[String(c.id)] || 0;
+  const possedees = CARTES.filter((c) => nb(c) > 0).length;
+  $("#t-compte").textContent = `${possedees}/${CARTES.length}`;
+  $("#coll-titre").textContent = `${possedees} cartes sur ${CARTES.length}`;
+  $("#coll-jauge").style.width = (CARTES.length ? (possedees / CARTES.length) * 100 : 0) + "%";
+
+  const filtres = $("#filtres");
+  filtres.replaceChildren();
+  const bouton = (libelle, valeur, r) => {
+    const b = el("button", "", libelle);
+    b.type = "button";
+    if (r !== undefined) b.dataset.r = r;
+    b.setAttribute("aria-pressed", String(filtre === valeur));
+    b.addEventListener("click", () => { filtre = valeur; majCollection(); });
+    filtres.append(b);
+  };
+  bouton(`Toutes ${possedees}/${CARTES.length}`, -1);
+  REGL.ordre.forEach((nom, r) => {
+    const lot = CARTES.filter((c) => rang(c) === r);
+    if (!lot.length) return;
+    bouton(`${nom} ${lot.filter((c) => nb(c) > 0).length}/${lot.length}`, r, r);
+  });
+
+  const grille = $("#grille");
+  grille.replaceChildren();
+  CARTES
+    .filter((c) => filtre === -1 || rang(c) === filtre)
+    .sort((a, b) => rang(a) - rang(b) || a.id - b.id)
+    .forEach((c) => {
+      const n = nb(c);
+      const conteneur = el("div", "carte-fixe");
+      conteneur.dataset.r = rang(c);
+      conteneur.append(faceCarte(c, { manquante: n === 0, nb: n }));
+      if (n === 0) conteneur.setAttribute("aria-label", `Carte n° ${c.id}, pas encore trouvée`);
+      grille.append(conteneur);
+    });
+}
+
+function onglet(nom) {
+  for (const n of ["boosters", "collection"]) {
+    $("#t-" + n).setAttribute("aria-selected", String(n === nom));
+    $("#v-" + n).hidden = n !== nom;
+  }
+  if (nom === "collection") majCollection();
+}
+
+/* ---------- démarrage ---------- */
+async function texte(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(url + " : erreur " + r.status);
+  return r.text();
+}
+
+async function demarrer() {
+  try {
+    const [cartesTxt, moteurSrc] = await Promise.all([texte("cartes.json"), texte("moteur.py")]);
+    CARTES_TXT = cartesTxt;
+    CARTES = JSON.parse(cartesTxt);
+    const pyodide = await loadPyodide();
+    pyodide.runPython(moteurSrc);
+    ouvrirPy = pyodide.globals.get("ouvrir_booster_web");
+    REGL = JSON.parse(pyodide.globals.get("reglages_web")());
+    etat = lireSauvegarde() || REGL.etat_initial;
+
+    $("#pack-nb").textContent = pluriel(REGL.taille_booster, "carte", "cartes");
+    const points = $("#pack-points");
+    REGL.ordre.forEach((_, r) => { const p = el("span"); p.dataset.r = r; points.append(p); });
+
+    majStats();
+    majCollection();
+    $("#t-collection").disabled = false;
+    $("#pack").disabled = false;
+    phase = "pret";
+    majMessage();
+  } catch (e) {
+    console.error(e);
+    $("#message").textContent =
+      "Le jeu n'a pas pu démarrer (" + (e.message || e) + "). " +
+      "Ouvre la page depuis son adresse en ligne, ou en local avec « python -m http.server », pas en double-cliquant sur le fichier.";
+  }
+}
+
+$("#pack").addEventListener("click", ouvrir);
+$("#btn-tout").addEventListener("click", toutRetourner);
+$("#btn-autre").addEventListener("click", autreBooster);
+$("#t-boosters").addEventListener("click", () => onglet("boosters"));
+$("#t-collection").addEventListener("click", () => onglet("collection"));
+$("#reset").addEventListener("click", () => {
+  if (phase === "chargement") return;
+  if (!confirm("Effacer toute ta collection et repartir de zéro ?")) return;
+  etat = structuredClone(REGL.etat_initial);
+  ecrireSauvegarde();
+  majStats();
+  majCollection();
+  if (phase !== "ouverture") autreBooster();
+});
+
+demarrer();
+</script>
+</body>
+</html>

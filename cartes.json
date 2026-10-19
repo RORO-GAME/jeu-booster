@@ -1,0 +1,21 @@
+[
+  {"id": 1,  "nom": "Carte test 01", "rarete": "commune",     "image": "images/001.png"},
+  {"id": 2,  "nom": "Carte test 02", "rarete": "commune",     "image": "images/002.png"},
+  {"id": 3,  "nom": "Carte test 03", "rarete": "commune",     "image": "images/003.png"},
+  {"id": 4,  "nom": "Carte test 04", "rarete": "commune",     "image": "images/004.png"},
+  {"id": 5,  "nom": "Carte test 05", "rarete": "commune",     "image": "images/005.png"},
+  {"id": 6,  "nom": "Carte test 06", "rarete": "commune",     "image": "images/006.png"},
+  {"id": 7,  "nom": "Carte test 07", "rarete": "commune",     "image": "images/007.png"},
+  {"id": 8,  "nom": "Carte test 08", "rarete": "commune",     "image": "images/008.png"},
+  {"id": 9,  "nom": "Carte test 09", "rarete": "peu commune", "image": "images/009.png"},
+  {"id": 10, "nom": "Carte test 10", "rarete": "peu commune", "image": "images/010.png"},
+  {"id": 11, "nom": "Carte test 11", "rarete": "peu commune", "image": "images/011.png"},
+  {"id": 12, "nom": "Carte test 12", "rarete": "peu commune", "image": "images/012.png"},
+  {"id": 13, "nom": "Carte test 13", "rarete": "peu commune", "image": "images/013.png"},
+  {"id": 14, "nom": "Carte test 14", "rarete": "rare",        "image": "images/014.png"},
+  {"id": 15, "nom": "Carte test 15", "rarete": "rare",        "image": "images/015.png"},
+  {"id": 16, "nom": "Carte test 16", "rarete": "rare",        "image": "images/016.png"},
+  {"id": 17, "nom": "Carte test 17", "rarete": "ultra rare",  "image": "images/017.png"},
+  {"id": 18, "nom": "Carte test 18", "rarete": "ultra rare",  "image": "images/018.png"},
+  {"id": 19, "nom": "Carte test 19", "rarete": "légendaire",  "image": "images/019.png"}
+]
