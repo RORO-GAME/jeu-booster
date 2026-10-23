@@ -17,5 +17,5 @@
   {"id": 16, "nom": "Carte test 16", "rarete": "rare",        "image": "images/016.png"},
   {"id": 17, "nom": "Carte test 17", "rarete": "ultra rare",  "image": "images/017.png"},
   {"id": 18, "nom": "Carte test 18", "rarete": "ultra rare",  "image": "images/018.png"},
-  {"id": 19, "nom": "Carte test 19", "rarete": "légendaire",  "image": "images/019.png"}
+  {"id": 19, "nom": "test", "rarete": "légendaire",  "image": "images/019.png"}
 ]
