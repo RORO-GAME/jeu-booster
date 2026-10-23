@@ -36,6 +36,7 @@ def charger_sauvegarde():
         with open(FICHIER_SAUVEGARDE, encoding="utf-8") as f:
             etat = json.load(f)
         etat.setdefault("finitions", {})
+        etat.setdefault("monnaie", 0)
         return etat
     return etat_initial()
 
@@ -53,7 +54,8 @@ def afficher_carte(carte):
     if carte["nouvelle_finition"]:
         marque = "  ✨ NOUVELLE FINITION"
     fin = f"  {FINITIONS[carte['finition']]}" if carte["finition"] in FINITIONS else ""
-    print(f"  {SYMBOLES[carte['rarete']]} {carte['nom']}  [{carte['rarete']}]{fin}{marque}")
+    gain = f"  +{carte['pieces']} pièces" if carte["pieces"] else ""
+    print(f"  {SYMBOLES[carte['rarete']]} {carte['nom']}  [{carte['rarete']}]{fin}{marque}{gain}")
 
 
 def afficher_collection(cartes, etat):
@@ -78,6 +80,7 @@ def afficher_collection(cartes, etat):
 
 def afficher_stats(etat):
     print(f"\nBoosters ouverts : {etat['boosters_ouverts']}")
+    print(f"Pièces : {etat['monnaie']}")
     print(f"Boosters depuis la dernière carte {PITIE_RARETE} ou mieux : {etat['sans_rare']}/{PITIE_APRES}")
 
 

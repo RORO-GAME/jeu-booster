@@ -52,10 +52,11 @@ button { font: inherit; color: inherit; }
 .entete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px 32px; padding: 28px 0 20px; }
 h1 { margin: 0; font-size: clamp(40px, 9vw, 64px); line-height: 1; font-weight: 800; letter-spacing: -0.035em; }
 .sous { margin: 6px 0 0; color: var(--doux); }
-.stats { display: flex; gap: 28px; margin: 0; }
+.stats { display: flex; flex-wrap: wrap; gap: 12px 28px; margin: 0; }
 .stats dt { font-size: 13px; color: var(--doux); }
 .stats dd { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.2; }
 .stats .garantie dd { font-size: 15px; font-weight: 600; }
+.stats dd.pieces::before { content: ""; display: inline-block; width: .6em; height: .6em; margin-right: .35em; border-radius: 50%; background: var(--rc4); box-shadow: inset 0 0 0 .12em rgba(0, 0, 0, .25); }
 .jauge { height: 4px; margin-top: 7px; border-radius: 2px; background: var(--ligne); overflow: hidden; }
 .jauge span { display: block; height: 100%; width: 0; background: var(--texte); transition: width .5s ease; }
 .jauge.large { height: 6px; }
@@ -176,27 +177,38 @@ h1 { margin: 0; font-size: clamp(40px, 9vw, 64px); line-height: 1; font-weight: 
   mix-blend-mode: color-dodge;
   background: linear-gradient(115deg, #ff7ad9, #ffe36b 18%, #8ef0a3 34%, #6fd0ff 50%, #a58bff 66%, #ff7ad9 84%, #ffe36b);
   background-size: 250% 250%;
-  animation: derive 7s linear infinite alternate;
 }
 .glare {
   mix-blend-mode: overlay;
   background: radial-gradient(circle at var(--mx, 30%) var(--my, 22%), rgba(255, 255, 255, .6), transparent 46%);
 }
-.survol .foil { animation: none; background-position: var(--mx, 40%) var(--my, 30%); }
+[data-f="arc"] .foil { animation: derive 7s linear infinite alternate; }
+[data-f="brillante"] .foil {  /* brillante : un simple reflet blanc qui balaie la carte, sans aucune couleur */
+  mix-blend-mode: screen;
+  background:
+    linear-gradient(115deg, transparent 34%, rgba(255, 255, 255, .62) 46%, rgba(255, 255, 255, .2) 56%, transparent 66%),
+    linear-gradient(135deg, rgba(255, 255, 255, .22), transparent 42%);
+  background-size: 300% 100%, 100% 100%;
+  animation: balayage 5s ease-in-out infinite;
+}
+.survol [data-f] .foil { animation: none; background-position: var(--mx, 40%) var(--my, 30%); }
 @keyframes derive { from { background-position: 0% 20%; } to { background-position: 100% 80%; } }
+@keyframes balayage { from { background-position: 120% 0; } to { background-position: -20% 0; } }
 
 [data-r="4"] .glare { opacity: .8; }
-[data-r="5"] .foil { opacity: .2; }   /* la secrète a toujours un reflet irisé discret */
+[data-r="5"] .foil { opacity: .14; }  /* la secrète a toujours un reflet irisé très discret */
 [data-r="5"] .glare { opacity: 1; }
-[data-f="brillante"] .foil { opacity: .4; }
+[data-f="brillante"] .foil { opacity: 1; }
 [data-f="arc"] .foil { opacity: .6; }
-[data-f="brillante"] .glare, [data-f="arc"] .glare { opacity: 1; }
+[data-f="brillante"] .glare { mix-blend-mode: screen; opacity: .5; }
+[data-f="arc"] .glare { opacity: 1; }
 [data-f="brillante"] .int::after, [data-f="arc"] .int::after {
   content: ""; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay; opacity: .4;
   background: radial-gradient(circle, rgba(255, 255, 255, .9) 0 .7px, transparent 1.3px) 0 0 / 6cqw 6cqw;
   animation: scintille 3s ease-in-out infinite;
 }
 @keyframes scintille { 50% { opacity: .12; } }
+[data-f="brillante"] .int::after { background-size: 10cqw 10cqw; opacity: .5; }  /* quelques paillettes blanches, plus espacées */
 [data-f="arc"] .ext { background: linear-gradient(135deg, #ffe36b, #8ef0a3 22%, #6fd0ff 42%, #a58bff 62%, #ff7ad9 82%, #ff9a5c); }
 
 .reflet {  /* reflet qui passe sur les légendaires et les secrètes */
@@ -213,6 +225,7 @@ h1 { margin: 0; font-size: clamp(40px, 9vw, 64px); line-height: 1; font-weight: 
   box-shadow: 0 .5cqw 2cqw rgba(0, 0, 0, .5);
 }
 .badge.nb { left: auto; right: 4cqw; transform: none; }
+.badge.gain { top: auto; bottom: -6.5cqw; background: var(--rc4); color: #1d1503; }  /* pièces gagnées avec un doublon */
 
 .manquante .ext { background: #1d2b39; box-shadow: none; }
 .manquante .int { background: #0a1118; }
@@ -263,6 +276,7 @@ footer p { margin: 0; }
     </div>
     <dl class="stats">
       <div><dt>Boosters ouverts</dt><dd id="st-ouverts">0</dd></div>
+      <div><dt>Pièces</dt><dd class="pieces" id="st-pieces">0</dd></div>
       <div class="garantie">
         <dt id="st-garantie-titre">Carte rare garantie</dt>
         <dd id="st-garantie">…</dd>
@@ -343,6 +357,7 @@ let phase = "chargement"; // chargement | pret | ouverture | reveal | fini
 let tirage = [];
 let retournees = 0;
 let garantieDeclenchee = false;
+let gainRestant = 0;      // pièces des cartes pas encore retournées (elles s'ajoutent au compteur au fil des retournements)
 let filtre = -1;
 
 const rang = (c) => REGL.ordre.indexOf(c.rarete);
@@ -355,6 +370,7 @@ function lireSauvegarde() {
     const e = JSON.parse(t);
     if (e && typeof e.collection === "object" && Number.isFinite(e.boosters_ouverts) && Number.isFinite(e.sans_rare)) {
       e.finitions = e.finitions || {};
+      e.monnaie = Number.isFinite(e.monnaie) ? e.monnaie : 0;
       return e;
     }
   } catch (_) { /* navigateur sans stockage : on repart de zéro */ }
@@ -429,6 +445,7 @@ function faceCarte(c, o = {}) {
   if (o.nouvelle) f.append(el("span", "badge", "Nouvelle"));
   else if (o.nouvelleFinition) f.append(el("span", "badge", "Nouvelle finition"));
   if (o.nb > 1) f.append(el("span", "badge nb", "×" + o.nb));
+  if (o.pieces > 0) f.append(el("span", "badge gain", "+" + pluriel(o.pieces, "pièce", "pièces")));
   return f;
 }
 
@@ -462,7 +479,7 @@ function carteBooster(c, i) {
   b.setAttribute("aria-label", `Carte ${i + 1} sur ${tirage.length}, face cachée. Retourner.`);
   const tilt = el("span", "tilt");
   const flip = el("span", "flip");
-  flip.append(versoCarte(), faceCarte(c, { nouvelle: c.nouvelle, nouvelleFinition: c.nouvelle_finition, finition: c.finition }));
+  flip.append(versoCarte(), faceCarte(c, { nouvelle: c.nouvelle, nouvelleFinition: c.nouvelle_finition, finition: c.finition, pieces: c.pieces }));
   tilt.append(flip);
   b.append(tilt);
   b.addEventListener("click", () => retourner(b, c));
@@ -493,6 +510,8 @@ function majMessage() {
     let t = n ? `${pluriel(n, "nouvelle carte", "nouvelles cartes")} dans ce booster.` : "Que des doublons dans ce booster.";
     if (tirage.some((c) => c.finition === "arc-en-ciel")) t += " Une carte arc-en-ciel !";
     else if (tirage.some((c) => c.finition === "brillante")) t += " Une carte brillante !";
+    const gain = tirage.reduce((s, c) => s + (c.pieces || 0), 0);
+    if (gain > 0) t += ` Tes doublons rapportent ${pluriel(gain, "pièce", "pièces")}.`;
     if (garantieDeclenchee) t += ` La garantie s'est déclenchée : une carte ${REGL.pitie_rarete} ou mieux t'était réservée.`;
     m.textContent = t;
   }
@@ -515,6 +534,7 @@ async function ouvrir() {
   tirage = res.cartes;
   garantieDeclenchee = res.pitie;
   retournees = 0;
+  gainRestant = tirage.reduce((s, c) => s + (c.pieces || 0), 0);
   ecrireSauvegarde();
   majStats();
 
@@ -539,6 +559,8 @@ function retourner(b, c) {
   const fin = c.finition !== "normale" ? ", " + NOMS_FIN[c.finition].toLowerCase() : "";
   b.setAttribute("aria-label", `${c.nom}, ${c.rarete}${fin}${c.nouvelle ? ", nouvelle" : ""}`);
   retournees++;
+  gainRestant -= c.pieces || 0;
+  majPieces();
   const r = rang(c);
   if (r >= 2 || c.finition !== "normale") b.classList.add("eclat");
   if (c.finition === "arc-en-ciel") flash("#ffffff");
@@ -584,8 +606,13 @@ function autreBooster() {
 }
 
 /* ---------- statistiques et collection ---------- */
+function majPieces() {
+  $("#st-pieces").textContent = etat.monnaie - gainRestant;
+}
+
 function majStats() {
   $("#st-ouverts").textContent = etat.boosters_ouverts;
+  majPieces();
   $("#st-garantie-titre").textContent = `Carte ${REGL.pitie_rarete} ou mieux garantie`;
   const restant = Math.max(REGL.pitie_apres - etat.sans_rare, 0) + 1;
   $("#st-garantie").textContent = `dans ${pluriel(restant, "booster", "boosters")} au plus`;
@@ -695,6 +722,7 @@ $("#reset").addEventListener("click", () => {
   if (phase === "chargement") return;
   if (!confirm("Effacer toute ta collection et repartir de zéro ?")) return;
   etat = structuredClone(REGL.etat_initial);
+  gainRestant = 0;
   ecrireSauvegarde();
   majStats();
   majCollection();

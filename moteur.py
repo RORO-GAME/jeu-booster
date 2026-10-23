@@ -43,6 +43,19 @@ PITIE_RARETE = "super rare"   # ...le booster suivant en contient une
 CHANCE_BRILLANTE = 0.06
 CHANCE_ARC_EN_CIEL = 0.015
 
+# Monnaie : un doublon (une carte que tu as déjà) rapporte des pièces.
+# Plus la carte est rare, plus elle rapporte. Une carte brillante ou arc-en-ciel
+# rapporte un peu plus : la valeur est multipliée, puis arrondie.
+VALEUR_DOUBLON = {
+    "commune": 2,
+    "rare": 5,
+    "super rare": 12,
+    "ultra rare": 30,
+    "légendaire": 80,
+    "secrète": 250,
+}
+BONUS_FINITION = {"normale": 1, "brillante": 1.5, "arc-en-ciel": 2}
+
 
 # ----------------------------------------------------------------------
 # Logique de tirage
@@ -50,7 +63,8 @@ CHANCE_ARC_EN_CIEL = 0.015
 def etat_initial():
     # collection : {id de la carte (texte): nombre d'exemplaires}
     # finitions  : {id de la carte (texte): {"brillante": n, "arc-en-ciel": n}}
-    return {"collection": {}, "finitions": {}, "boosters_ouverts": 0, "sans_rare": 0}
+    # monnaie    : nombre de pièces gagnées avec les doublons
+    return {"collection": {}, "finitions": {}, "monnaie": 0, "boosters_ouverts": 0, "sans_rare": 0}
 
 
 def tirer_carte(cartes, rarete_min=None):
@@ -62,6 +76,11 @@ def tirer_carte(cartes, rarete_min=None):
         possibles = [r for r in ORDRE if any(c["rarete"] == r for c in cartes)]
     rarete = random.choices(possibles, weights=[RARETES[r] for r in possibles])[0]
     return random.choice([c for c in cartes if c["rarete"] == rarete])
+
+
+def valeur_doublon(rarete, finition):
+    """Pièces gagnées quand on tire un doublon de cette rareté et de cette finition."""
+    return int(VALEUR_DOUBLON[rarete] * BONUS_FINITION[finition] + 0.5)
 
 
 def tirer_finition():
@@ -81,8 +100,10 @@ def ouvrir_booster(cartes, etat):
     - "finition" : "normale", "brillante" ou "arc-en-ciel"
     - "nouvelle" : True si le joueur ne possédait pas encore cette carte
     - "nouvelle_finition" : True si la carte est déjà possédée mais pas dans cette finition
+    - "pieces" : pièces gagnées (0 si la carte est nouvelle, sinon la valeur du doublon)
     """
     etat.setdefault("finitions", {})
+    etat.setdefault("monnaie", 0)
 
     tirage = [tirer_carte(cartes) for _ in range(TAILLE_BOOSTER - 1)]
     tirage.append(tirer_carte(cartes, GARANTIE_DERNIERE))  # dernière carte : rareté minimale
@@ -110,7 +131,8 @@ def ouvrir_booster(cartes, etat):
         fin = tirer_finition()
         nouvelle = cle not in deja
         nouvelle_fin = (not nouvelle) and fin != "normale" and fin not in finitions_vues.get(cle, set())
-        resultat.append({**c, "finition": fin, "nouvelle": nouvelle, "nouvelle_finition": nouvelle_fin})
+        pieces = 0 if nouvelle else valeur_doublon(c["rarete"], fin)
+        resultat.append({**c, "finition": fin, "nouvelle": nouvelle, "nouvelle_finition": nouvelle_fin, "pieces": pieces})
         deja.add(cle)
         if fin != "normale":
             finitions_vues.setdefault(cle, set()).add(fin)
@@ -124,6 +146,7 @@ def ouvrir_booster(cartes, etat):
     for c in resultat:
         cle = str(c["id"])
         etat["collection"][cle] = etat["collection"].get(cle, 0) + 1
+        etat["monnaie"] += c["pieces"]
         if c["finition"] != "normale":
             f = etat["finitions"].setdefault(cle, {})
             f[c["finition"]] = f.get(c["finition"], 0) + 1
