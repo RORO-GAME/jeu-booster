@@ -7,12 +7,20 @@ la progression dans sauvegarde.json.
 import json
 from pathlib import Path
 
-from moteur import ORDRE, PITIE_APRES, etat_initial, ouvrir_booster
+from moteur import ORDRE, PITIE_APRES, PITIE_RARETE, etat_initial, ouvrir_booster
 
 DOSSIER = Path(__file__).parent
 FICHIER_CARTES = DOSSIER / "cartes.json"
 FICHIER_SAUVEGARDE = DOSSIER / "sauvegarde.json"
-SYMBOLES = {"commune": "⚪", "peu commune": "🟢", "rare": "🔵", "ultra rare": "🟣", "légendaire": "🟡"}
+SYMBOLES = {
+    "commune": "⚪",
+    "rare": "🔵",
+    "super rare": "🟣",
+    "ultra rare": "🔴",
+    "légendaire": "🟡",
+    "secrète": "💠",
+}
+FINITIONS = {"brillante": "✦ brillante", "arc-en-ciel": "🌈 arc-en-ciel"}
 
 
 # ----------------------------------------------------------------------
@@ -26,7 +34,9 @@ def charger_cartes():
 def charger_sauvegarde():
     if FICHIER_SAUVEGARDE.exists():
         with open(FICHIER_SAUVEGARDE, encoding="utf-8") as f:
-            return json.load(f)
+            etat = json.load(f)
+        etat.setdefault("finitions", {})
+        return etat
     return etat_initial()
 
 
@@ -40,7 +50,10 @@ def sauvegarder(etat):
 # ----------------------------------------------------------------------
 def afficher_carte(carte):
     marque = "  ✨ NOUVELLE" if carte["nouvelle"] else ""
-    print(f"  {SYMBOLES[carte['rarete']]} {carte['nom']}  [{carte['rarete']}]{marque}")
+    if carte["nouvelle_finition"]:
+        marque = "  ✨ NOUVELLE FINITION"
+    fin = f"  {FINITIONS[carte['finition']]}" if carte["finition"] in FINITIONS else ""
+    print(f"  {SYMBOLES[carte['rarete']]} {carte['nom']}  [{carte['rarete']}]{fin}{marque}")
 
 
 def afficher_collection(cartes, etat):
@@ -53,16 +66,19 @@ def afficher_collection(cartes, etat):
         n = sum(1 for c in de_cette_rarete if str(c["id"]) in possedees)
         print(f"\n{SYMBOLES[rarete]} {rarete.upper()} ({n}/{len(de_cette_rarete)})")
         for c in de_cette_rarete:
-            nb = possedees.get(str(c["id"]), 0)
+            cle = str(c["id"])
+            nb = possedees.get(cle, 0)
             if nb:
-                print(f"  {c['nom']}  x{nb}")
+                fins = etat["finitions"].get(cle, {})
+                extra = "".join(f"  {FINITIONS[f]} x{k}" for f, k in fins.items() if f in FINITIONS)
+                print(f"  {c['nom']}  x{nb}{extra}")
             else:
                 print("  ???")
 
 
 def afficher_stats(etat):
     print(f"\nBoosters ouverts : {etat['boosters_ouverts']}")
-    print(f"Boosters depuis le dernier rare ou mieux : {etat['sans_rare']}/{PITIE_APRES}")
+    print(f"Boosters depuis la dernière carte {PITIE_RARETE} ou mieux : {etat['sans_rare']}/{PITIE_APRES}")
 
 
 # ----------------------------------------------------------------------
@@ -87,7 +103,7 @@ def main():
             print("\nOuverture du booster...")
             tirage, pitie = ouvrir_booster(cartes, etat)
             if pitie:
-                print("  (Pitié activée : une carte rare ou mieux t'était garantie !)")
+                print(f"  (Pitié activée : une carte {PITIE_RARETE} ou mieux t'était garantie !)")
             for carte in tirage:
                 afficher_carte(carte)
             sauvegarder(etat)
