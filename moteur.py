@@ -11,15 +11,15 @@ import random
 # RÉGLAGES : c'est ici que tu joues avec l'équilibrage
 # ----------------------------------------------------------------------
 # Poids de chaque rareté (plus c'est grand, plus c'est fréquent).
-# Sur 100 cartes tirées : environ 52 communes, 28 rares, 13 super rares,
-# 5 ultra rares, 1 légendaire, et une secrète toutes les 1000 cartes.
+# Sur 1000 cartes tirées : environ 560 communes, 270 rares, 115 super rares,
+# 45 ultra rares, 5 légendaires, et une secrète toutes les 2500 cartes.
 RARETES = {
-    "commune": 52,
-    "rare": 28,
-    "super rare": 13,
-    "ultra rare": 5.5,
-    "légendaire": 1.4,
-    "secrète": 0.1,
+    "commune": 56,
+    "rare": 27,
+    "super rare": 11.5,
+    "ultra rare": 4.5,
+    "légendaire": 0.5,
+    "secrète": 0.04,
 }
 ORDRE = list(RARETES)  # de la plus commune à la plus rare
 
@@ -160,6 +160,12 @@ def reglages_web():
     return json.dumps({
         "ordre": ORDRE,
         "codes": [CODES[r] for r in ORDRE],
+        "poids": [RARETES[r] for r in ORDRE],
+        "valeurs": [VALEUR_DOUBLON[r] for r in ORDRE],
+        "bonus": BONUS_FINITION,
+        "chance_brillante": CHANCE_BRILLANTE,
+        "chance_arc": CHANCE_ARC_EN_CIEL,
+        "garantie_derniere": GARANTIE_DERNIERE,
         "taille_booster": TAILLE_BOOSTER,
         "pitie_apres": PITIE_APRES,
         "pitie_rarete": PITIE_RARETE,
