@@ -6,10 +6,10 @@
 // Pour activer les vrais comptes : suis la partie "Activer les comptes en ligne" de LISEZMOI.md,
 // puis colle ici le bloc que Firebase te donne. Seuls apiKey et projectId servent.
 window.FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyD7Qyh8r8_5VmwWW_GjfX9LCyAdkWYvQyA",
+  authDomain: "roro-games-boosters.firebaseapp.com",
+  projectId: "roro-games-boosters",
+  storageBucket: "roro-games-boosters.firebasestorage.app",
+  messagingSenderId: "1061351974632",
+  appId: "1:1061351974632:web:137e003b166c2669d80b5d",
 };
