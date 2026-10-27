@@ -48,7 +48,7 @@ body {
 }
 button { font: inherit; color: inherit; }
 :focus-visible { outline: 3px solid var(--texte); outline-offset: 3px; }
-.page { max-width: 1040px; margin: 0 auto; padding: 0 16px 56px; }
+.page { position: relative; z-index: 1; max-width: 1040px; margin: 0 auto; padding: 0 16px 56px; }
 
 /* ---------- en-tête ---------- */
 .haut { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; padding: 20px 0 14px; }
@@ -98,7 +98,7 @@ button { font: inherit; color: inherit; }
   transition: transform .25s ease;
 }
 .pack:hover:not(:disabled) { transform: translateY(-6px) rotate(-1.2deg); }
-.pack:disabled { cursor: progress; filter: saturate(.4) brightness(.85); }
+.pack:disabled:not(.ouvre) { cursor: default; filter: saturate(.4) brightness(.85); }
 .pack::before, .pack::after {
   content: ""; position: absolute; left: 0; right: 0; height: 18px;
   background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .26) 0 3px, rgba(0, 0, 0, .26) 3px 6px);
@@ -270,6 +270,138 @@ button.carte-fixe { cursor: pointer; }
 #flash.on { animation: eclair .8s ease-out; }
 @keyframes eclair { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
 
+/* ================= LA CARTE SECRÈTE : platine holographique ================= */
+@property --ang { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes tourne { to { --ang: 360deg; } }
+@keyframes tourne-rot { to { transform: rotate(360deg); } }
+@keyframes respire { 50% { opacity: .35; transform: scale(.97); } }
+@keyframes monte {
+  from { background-position: 0 0, 7cqw 11cqw, 3cqw 5cqw; }
+  to   { background-position: 0 -23cqw, 7cqw -6cqw, 3cqw -4cqw; }
+}
+@keyframes lueur-texte { to { background-position: -250% 0; } }
+
+/* le cadre : un anneau de lumière qui tourne */
+[data-r="5"]:not(.manquante) .ext {
+  background: conic-gradient(from var(--ang, 0deg), #ffffff, #9ec5ff 14%, #ffffff 28%, #f0c2ff 42%, #ffffff 56%, #9ef0ff 70%, #ffffff 84%, #c8d4ff);
+  animation: tourne 5s linear infinite;
+  box-shadow: 0 0 4cqw rgba(190, 215, 255, .75), 0 1.5cqw 5cqw rgba(0, 0, 0, .55);
+}
+/* l'aura qui déborde autour de la carte */
+.aura { position: absolute; inset: -6cqw; border-radius: 12cqw; pointer-events: none; opacity: .8;
+  background: conic-gradient(from var(--ang, 0deg), #ffffff, #7aa7ff, #ffffff, #e0a8ff, #ffffff, #7af0ff, #ffffff);
+  filter: blur(5cqw); animation: tourne 4s linear infinite, respire 3s ease-in-out infinite; }
+/* l'illustration suit le mouvement, mais à l'envers : effet de profondeur */
+[data-r="5"]:not(.manquante) .art { transform: translate(calc(var(--px, 0) * -2.2cqw), calc(var(--py, 0) * -2.2cqw)) scale(1.1); transition: transform .12s linear; }
+[data-r="5"]:not(.manquante) .foil { opacity: .16; animation: derive 6s linear infinite alternate; }
+[data-r="5"]:not(.manquante) .glare { opacity: 1; }
+/* des rayons de lumière qui tournent lentement derrière tout */
+.s-rayons { position: absolute; inset: -90%; pointer-events: none; mix-blend-mode: overlay; opacity: .6;
+  background: repeating-conic-gradient(from 0deg, transparent 0 8deg, rgba(255, 255, 255, .75) 11deg, transparent 15deg 22deg);
+  animation: tourne-rot 26s linear infinite; }
+/* des étincelles qui montent doucement et scintillent */
+.s-etoiles { position: absolute; inset: -6%; pointer-events: none; mix-blend-mode: screen;
+  background:
+    radial-gradient(circle, #fff 0 .6cqw, transparent 1.5cqw) 0 0 / 19cqw 23cqw,
+    radial-gradient(circle, #cfe4ff 0 .45cqw, transparent 1.1cqw) 7cqw 11cqw / 13cqw 17cqw,
+    radial-gradient(circle, #fff 0 .3cqw, transparent .8cqw) 3cqw 5cqw / 8cqw 9cqw;
+  transform: translate(calc(var(--px, 0) * 2cqw), calc(var(--py, 0) * 2cqw));
+  animation: monte 7s linear infinite, scintille 2.4s ease-in-out infinite; }
+[data-r="5"]:not(.manquante) .nom { color: transparent; text-shadow: none; filter: drop-shadow(0 .5cqw 1.6cqw rgba(0, 0, 0, .7));
+  background: linear-gradient(100deg, #fff 20%, #aee3ff 36%, #fff 48%, #f0c8ff 60%, #fff 78%) 0 0 / 250% 100%;
+  -webkit-background-clip: text; background-clip: text; animation: lueur-texte 3.2s linear infinite; }
+[data-r="5"]:not(.manquante) .code { box-shadow: 0 0 3cqw rgba(255, 255, 255, .85); }
+[data-r="5"]:not(.manquante) .trait { background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0)); box-shadow: 0 0 2cqw rgba(255, 255, 255, .8); }
+[data-r="5"][data-f="arc"]:not(.manquante) .foil { opacity: .85; }
+
+/* le suspense : avant d'être retournée, la carte secrète tremble et luit */
+#courante.presage { animation: tremble .22s linear infinite; }
+#courante.presage::before { content: ""; position: absolute; inset: -18%; z-index: -1; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 255, 255, .6), rgba(150, 190, 255, .25) 45%, transparent 68%); animation: respire 1.1s ease-in-out infinite; }
+#courante.presage .verso .ext { background: conic-gradient(from var(--ang, 0deg), #fff, #7aa7ff, #fff, #e0a8ff, #fff, #7af0ff, #fff); animation: tourne 1.6s linear infinite; box-shadow: 0 0 6cqw rgba(200, 225, 255, .9); }
+@keyframes tremble { 0%, 100% { transform: translate(0, 0) rotate(0); } 25% { transform: translate(-1.5px, 1px) rotate(-.5deg); } 50% { transform: translate(1.5px, -1px) rotate(.5deg); } 75% { transform: translate(-1px, -1.5px) rotate(-.3deg); } }
+
+/* la révélation : lumière, ondes, étincelles, bannière */
+#secret-fx { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .7s; overflow: hidden; }
+#secret-fx.on { opacity: 1; }
+.fx-fond { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 46%, rgba(120, 160, 255, .22), rgba(2, 4, 10, .82) 72%); }
+.fx-rayons { position: absolute; left: 50%; top: 46%; width: 190vmax; height: 190vmax; margin: -95vmax 0 0 -95vmax;
+  background: repeating-conic-gradient(from 0deg, transparent 0 7deg, rgba(215, 232, 255, .28) 9.5deg, transparent 12deg 18deg);
+  -webkit-mask-image: radial-gradient(circle closest-side, #000 0, rgba(0, 0, 0, .55) 16%, transparent 52%);
+  mask-image: radial-gradient(circle closest-side, #000 0, rgba(0, 0, 0, .55) 16%, transparent 52%);
+  animation: tourne-rot 48s linear infinite; }
+.fx-onde { position: absolute; left: 50%; top: 46%; width: 20vmin; height: 20vmin; margin: -10vmin 0 0 -10vmin; border-radius: 50%; border: .6vmin solid rgba(255, 255, 255, .85); opacity: 0; }
+#secret-fx.on .fx-onde { animation: onde 1.8s ease-out both; }
+#secret-fx.on .fx-onde:nth-child(4) { animation-delay: .22s; }
+#secret-fx.on .fx-onde:nth-child(5) { animation-delay: .44s; }
+@keyframes onde { 0% { transform: scale(.2); opacity: .9; } 100% { transform: scale(8); opacity: 0; } }
+.fx-etincelles span { position: absolute; left: 50%; top: 46%; width: 1.1vmin; height: 1.1vmin; border-radius: 50%; background: #fff; opacity: 0;
+  box-shadow: 0 0 1.6vmin .4vmin rgba(190, 220, 255, .95); }
+#secret-fx.on .fx-etincelles span { animation: jaillit var(--t, 1.5s) cubic-bezier(.1, .7, .3, 1) both; }
+@keyframes jaillit {
+  0% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--a)) translateX(0) scale(var(--z)); }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--a)) translateX(var(--d)) scale(0); }
+}
+#secret-banniere { position: fixed; top: 12%; left: 0; right: 0; z-index: 2; pointer-events: none; text-align: center; opacity: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-style: italic; font-weight: 900; text-transform: uppercase;
+  font-size: clamp(36px, 9vw, 78px); line-height: 1; letter-spacing: .18em; padding-left: .18em;
+  background: linear-gradient(100deg, #fff 25%, #aee3ff 40%, #fff 50%, #f0c8ff 60%, #fff 75%) 0 0 / 250% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 14px rgba(160, 200, 255, .9)); }
+#secret-banniere.on { animation: banniere 3.6s ease-out forwards, lueur-texte 3s linear infinite; }
+@keyframes banniere {
+  0% { opacity: 0; letter-spacing: .7em; transform: scale(1.5); }
+  22% { opacity: 1; letter-spacing: .18em; transform: scale(1); }
+  70% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.12); }
+}
+.scene.secoue { animation: secousse .8s ease-out; }
+@keyframes secousse {
+  0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-8px, 4px); } 22% { transform: translate(7px, -5px); }
+  36% { transform: translate(-5px, 3px); } 52% { transform: translate(4px, -2px); } 70% { transform: translate(-2px, 1px); }
+}
+
+/* ---------- connexion ---------- */
+.ecran { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 20px; background: rgba(6, 10, 15, .94); backdrop-filter: blur(8px); overflow: auto; }
+.connexion { width: min(390px, 100%); display: grid; gap: 14px; }
+.connexion .marque { justify-content: center; font-size: 30px; }
+.connexion .onglets { margin: 0; width: 100%; }
+.connexion .onglets button { flex: 1; }
+.connexion label { display: grid; gap: 6px; font-size: 14px; color: var(--doux); }
+.connexion input { padding: 12px 14px; border-radius: 12px; border: 1px solid var(--trait); background: rgba(255, 255, 255, .06); color: var(--texte); font: inherit; font-size: 16px; }
+.connexion input:focus { outline: 2px solid #fff; outline-offset: 1px; }
+.connexion .aide { margin: 0; font-size: 13px; color: var(--doux); }
+.erreur { margin: 0; min-height: 1.4em; font-size: 14px; color: #ff8d9a; }
+.btn:disabled { opacity: .5; cursor: default; }
+
+.puce.compte b { text-transform: capitalize; }
+.pied-actions { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.btn.ur { background: #ff4458; color: #fff; }
+.btn.ur:hover { background: #ff6c7c; }
+.statut-ok { color: #8fd9a8; }
+
+/* ---------- réserve de boosters ---------- */
+.stock-ligne { display: flex; justify-content: space-between; gap: 12px; }
+.stock-ligne b { font-variant-numeric: tabular-nums; }
+.stock-note { margin: 8px 0 0; font-size: 13.5px; }
+.pack.ur { background: linear-gradient(160deg, #8a2233, #451019 55%, #6b1b29); }
+
+/* ---------- boutique ---------- */
+.boutique { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); padding-top: 18px; }
+.article { display: flex; flex-direction: column; gap: 14px; }
+.article-haut { display: flex; gap: 16px; align-items: center; }
+.article h3 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
+.article p { margin: 4px 0 0; color: var(--doux); font-size: 14.5px; }
+.mini { position: relative; flex: none; width: 58px; aspect-ratio: 5 / 7; border-radius: 8px; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(160deg, #3b5a76, #1c3043 55%, #26405a); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18), 0 10px 18px -8px rgba(0, 0, 0, .8);
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-style: italic; font-weight: 900; font-size: 22px; }
+.mini.x10 { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18), 5px -4px 0 -1px #2b4560, 10px -8px 0 -2px #223a50, 0 10px 18px -8px rgba(0, 0, 0, .8); }
+.mini.ur { background: linear-gradient(160deg, #8a2233, #451019 55%, #6b1b29); }
+.prix { display: flex; align-items: baseline; gap: 6px; font-size: 14px; color: var(--doux); }
+.prix b { font-size: 24px; color: var(--texte); font-variant-numeric: tabular-nums; }
+.solde { color: var(--doux); font-size: 15px; margin: 4px 0 0; }
+.solde b { color: var(--texte); }
+
 /* ---------- collection ---------- */
 .panneau { border: 1px solid var(--trait); background: var(--panneau); border-radius: 18px; padding: 20px; }
 .coll-tete { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 24px; padding: 22px 0 6px; }
@@ -321,7 +453,8 @@ footer p { margin: 0; }
 
 @media (max-width: 560px) {
   .onglets { width: 100%; }
-  .onglets button { flex: 1; padding: 9px 8px; }
+  .onglets button { flex: 1; padding: 9px 4px; font-size: 14px; }
+  .onglets .n { display: none; }
   .grille { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 20px 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -337,14 +470,17 @@ footer p { margin: 0; }
       Boosters
     </div>
     <div class="puces">
+      <div class="puce compte" id="puce-compte" hidden><b id="st-pseudo"></b></div>
       <div class="puce pieces"><b id="st-pieces">0</b> pièces</div>
-      <div class="puce"><b id="st-ouverts">0</b> boosters ouverts</div>
+      <div class="puce"><b id="st-dispo">0</b> <span id="st-dispo-lbl">boosters</span></div>
+      <div class="puce"><b id="st-ouverts">0</b> <span id="st-ouverts-lbl">ouverts</span></div>
     </div>
   </header>
 
   <nav class="onglets" role="tablist" aria-label="Sections">
     <button type="button" role="tab" id="t-boosters" aria-selected="true" aria-controls="v-boosters">Booster</button>
     <button type="button" role="tab" id="t-collection" aria-selected="false" aria-controls="v-collection" disabled>Collection<span class="n" id="t-compte"></span></button>
+    <button type="button" role="tab" id="t-boutique" aria-selected="false" aria-controls="v-boutique" disabled>Boutique</button>
     <button type="button" role="tab" id="t-infos" aria-selected="false" aria-controls="v-infos" disabled>Infos</button>
   </nav>
 
@@ -355,7 +491,7 @@ footer p { margin: 0; }
           <span class="pack-reflet"></span>
           <span class="pack-centre">
             <span id="pack-etoile"></span>
-            <span class="pack-titre">Booster</span>
+            <span class="pack-titre" id="pack-titre">Booster</span>
             <span class="pack-nb" id="pack-nb"></span>
           </span>
           <span class="pack-points" id="pack-points" aria-hidden="true"></span>
@@ -374,10 +510,12 @@ footer p { margin: 0; }
         <button type="button" class="btn" id="btn-principal" hidden>Retourner la carte</button>
         <button type="button" class="btn second" id="btn-passer" hidden>Passer l'animation</button>
         <button type="button" class="btn" id="btn-autre" hidden>Ouvrir un autre booster</button>
+        <button type="button" class="btn ur" id="btn-ur" hidden>Booster ultra rare garanti</button>
       </div>
-      <div class="garantie">
-        <span id="st-garantie-titre">Carte garantie</span> : <b id="st-garantie">…</b>
+      <div class="garantie" id="reserve">
+        <div class="stock-ligne"><span>Boosters gratuits</span><b id="st-stock">…</b></div>
         <div class="jauge"><span id="jauge"></span></div>
+        <p class="stock-note" id="st-note"></p>
       </div>
     </section>
 
@@ -394,14 +532,28 @@ footer p { margin: 0; }
       <div class="grille" id="grille"></div>
     </section>
 
+    <section id="v-boutique" role="tabpanel" aria-labelledby="t-boutique" hidden>
+      <div class="coll-tete">
+        <div>
+          <h2>Boutique</h2>
+          <p class="solde">Tu as <b id="solde">0</b> pièces. Elles viennent de tes doublons.</p>
+        </div>
+      </div>
+      <div class="boutique" id="boutique"></div>
+      <p class="message" id="boutique-msg" aria-live="polite"></p>
+    </section>
+
     <section id="v-infos" role="tabpanel" aria-labelledby="t-infos" hidden>
       <div class="infos" id="infos"></div>
     </section>
   </main>
 
   <footer>
-    <p>Ta collection est enregistrée dans ce navigateur.</p>
-    <button type="button" class="btn discret" id="reset">Effacer ma collection</button>
+    <p id="pied-compte"></p>
+    <div class="pied-actions">
+      <button type="button" class="btn discret" id="deconnexion">Se déconnecter</button>
+      <button type="button" class="btn discret" id="reset">Effacer ma collection</button>
+    </div>
   </footer>
 </div>
 
@@ -423,11 +575,45 @@ footer p { margin: 0; }
 </dialog>
 <div id="flash"></div>
 
+<div id="secret-fx" aria-hidden="true">
+  <div class="fx-fond"></div>
+  <div class="fx-rayons"></div>
+  <div class="fx-onde"></div><div class="fx-onde"></div><div class="fx-onde"></div>
+  <div class="fx-etincelles" id="fx-etincelles"></div>
+</div>
+<div id="secret-banniere" aria-hidden="true">Carte secrète</div>
+
+<div class="ecran" id="ecran-connexion" hidden>
+  <form class="connexion panneau" id="form-connexion">
+    <div class="marque">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1.5c.9 5.6 4.9 9.6 10.5 10.5-5.6.9-9.6 4.9-10.5 10.5C11.1 16.9 7.1 12.9 1.5 12 7.1 11.1 11.1 7.1 12 1.5z"/></svg>
+      Boosters
+    </div>
+    <div class="onglets" role="group" aria-label="Connexion ou inscription">
+      <button type="button" id="c-connecter" aria-pressed="true">Se connecter</button>
+      <button type="button" id="c-inscrire" aria-pressed="false">Créer un compte</button>
+    </div>
+    <label>Pseudo
+      <input id="c-pseudo" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20" required>
+    </label>
+    <label>Mot de passe
+      <input id="c-mdp" name="password" type="password" autocomplete="current-password" required>
+    </label>
+    <p class="aide" id="c-aide"></p>
+    <p class="erreur" id="c-erreur" role="alert"></p>
+    <button type="submit" class="btn" id="c-valider">Se connecter</button>
+    <p class="aide" id="c-mode"></p>
+  </form>
+</div>
+
+<script src="firebase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
 <script>
 "use strict";
 
-const CLE = "boosters-sauvegarde-v3";
+const CLE_SESSION = "boosters-session-v4";   // qui est connecté sur cet appareil
+const CLE_LOCAL = "boosters-comptes-v4";     // comptes du mode sans serveur
+const CLE_CACHE = "boosters-cache-v4-";      // copie de la progression, suivie de l'identifiant du joueur
 const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = (s) => document.querySelector(s);
 const attendre = (ms) => new Promise((ok) => setTimeout(ok, ms));
@@ -462,22 +648,203 @@ let statut = "toutes";    // filtre d'état dans la collection
 
 const rang = (c) => REGL.ordre.indexOf(c.rarete);
 
-/* ---------- sauvegarde dans le navigateur ---------- */
-function lireSauvegarde() {
-  try {
-    const t = localStorage.getItem(CLE);
-    if (!t) return null;
-    const e = JSON.parse(t);
-    if (e && typeof e.collection === "object" && Number.isFinite(e.boosters_ouverts) && Number.isFinite(e.sans_rare)) {
-      e.finitions = e.finitions || {};
-      e.monnaie = Number.isFinite(e.monnaie) ? e.monnaie : 0;
-      return e;
-    }
-  } catch (_) { /* navigateur sans stockage : on repart de zéro */ }
+/* ---------- stockage du navigateur (avec un plan B si le navigateur le refuse) ---------- */
+const memoire = {};
+function lire(k) { try { return localStorage.getItem(k); } catch (_) { return memoire[k] ?? null; } }
+function ecrire(k, v) { try { localStorage.setItem(k, v); } catch (_) { memoire[k] = v; } }
+function effacer(k) { try { localStorage.removeItem(k); } catch (_) { delete memoire[k]; } }
+function lireJson(k) { try { const t = lire(k); return t ? JSON.parse(t) : null; } catch (_) { return null; } }
+
+/* ---------- comptes : un pseudo et un mot de passe ---------- */
+const DOMAINE = "@booster-jeu.app";   // Firebase veut une adresse mail : on en fabrique une, elle n'est jamais utilisée
+const normaliserPseudo = (p) => p.trim().normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+function verifierPseudo(p) {
+  const n = normaliserPseudo(p);
+  if (n.length < 3 || n.length > 20) return "Le pseudo doit faire entre 3 et 20 caractères.";
+  if (!/^[a-z0-9_.-]+$/.test(n)) return "Le pseudo ne peut contenir que des lettres, des chiffres, _ . et -";
   return null;
 }
-function ecrireSauvegarde() {
-  try { localStorage.setItem(CLE, JSON.stringify(etat)); } catch (_) { /* pas de sauvegarde possible */ }
+async function hacher(t) {
+  try {
+    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
+    return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+  } catch (_) {
+    let h = 5381;
+    for (const ch of t) h = ((h << 5) + h + ch.charCodeAt(0)) | 0;
+    return "x" + h;
+  }
+}
+
+/* Mode sans serveur : les comptes restent dans ce navigateur (utile pour tester, ou tant que Firebase n'est pas réglé) */
+function creerLocal() {
+  let courant = "";
+  const comptes = () => lireJson(CLE_LOCAL) || {};
+  const ouvrirSession = (id) => {
+    courant = id;
+    ecrire(CLE_SESSION, JSON.stringify({ mode: "local", pseudo: id }));
+    return { pseudo: id, uid: "local-" + id };
+  };
+  return {
+    nom: "local",
+    async inscrire(pseudo, mdp) {
+      const id = normaliserPseudo(pseudo), c = comptes();
+      if (c[id]) throw new Error("Ce pseudo est déjà pris.");
+      c[id] = { mdp: await hacher(id + ":" + mdp), etat: null };
+      ecrire(CLE_LOCAL, JSON.stringify(c));
+      return ouvrirSession(id);
+    },
+    async connecter(pseudo, mdp) {
+      const id = normaliserPseudo(pseudo), c = comptes();
+      if (!c[id] || c[id].mdp !== (await hacher(id + ":" + mdp))) throw new Error("Pseudo ou mot de passe incorrect.");
+      return ouvrirSession(id);
+    },
+    async reprendre() {
+      const s = lireJson(CLE_SESSION);
+      return s && s.mode === "local" && comptes()[s.pseudo] ? ouvrirSession(s.pseudo) : null;
+    },
+    async charger() { const c = comptes()[courant]; return c && c.etat ? JSON.parse(c.etat) : null; },
+    async sauver(texte) { const c = comptes(); if (c[courant]) { c[courant].etat = texte; ecrire(CLE_LOCAL, JSON.stringify(c)); } },
+    deconnecter() { effacer(CLE_SESSION); },
+  };
+}
+
+/* Comptes en ligne avec Firebase (gratuit) : on parle directement à leur service, sans bibliothèque */
+function creerFirebase(cfg) {
+  const cle = encodeURIComponent(cfg.apiKey);
+  const base = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(cfg.projectId)}/databases/(default)/documents/joueurs`;
+  let jeton = "", expire = 0, refresh = "", uid = "", pseudo = "";
+
+  const messages = [
+    ["EMAIL_EXISTS", "Ce pseudo est déjà pris."],
+    ["INVALID_LOGIN_CREDENTIALS", "Pseudo ou mot de passe incorrect."],
+    ["EMAIL_NOT_FOUND", "Pseudo ou mot de passe incorrect."],
+    ["INVALID_PASSWORD", "Pseudo ou mot de passe incorrect."],
+    ["INVALID_EMAIL", "Ce pseudo n'est pas valide."],
+    ["WEAK_PASSWORD", "Mot de passe trop court : 6 caractères minimum."],
+    ["TOO_MANY_ATTEMPTS", "Trop d'essais. Attends un peu avant de réessayer."],
+    ["OPERATION_NOT_ALLOWED", "Les comptes ne sont pas activés dans Firebase (voir LISEZMOI.md)."],
+    ["CONFIGURATION_NOT_FOUND", "Les comptes ne sont pas activés dans Firebase (voir LISEZMOI.md)."],
+    ["API key", "La clé Firebase est incorrecte (voir firebase-config.js)."],
+    ["does not exist", "La base de données Firestore n'est pas créée (voir LISEZMOI.md)."],
+    ["PERMISSION_DENIED", "La base de données refuse l'accès : vérifie les règles Firestore (voir LISEZMOI.md)."],
+  ];
+  const traduire = (code, statut) => {
+    for (const [k, t] of messages) if (String(code).includes(k)) return t;
+    return "Erreur du service de comptes (" + (code || statut) + ").";
+  };
+  async function appel(url, options) {
+    let r;
+    try { r = await fetch(url, options); } catch (_) { throw new Error("Pas de connexion à Internet."); }
+    let j = {};
+    try { j = await r.json(); } catch (_) { /* réponse vide */ }
+    if (!r.ok) {
+      const code = (j.error && (j.error.message || j.error.status)) || "";
+      const e = new Error(traduire(code, r.status));
+      e.statut = r.status;
+      e.code = String(code);
+      throw e;
+    }
+    return j;
+  }
+  const entrerSession = (r, p) => {
+    jeton = r.idToken || r.id_token;
+    refresh = r.refreshToken || r.refresh_token;
+    uid = r.localId || r.user_id;
+    expire = Date.now() + (Number(r.expiresIn || r.expires_in) || 3600) * 1000;
+    pseudo = p;
+    ecrire(CLE_SESSION, JSON.stringify({ mode: "firebase", pseudo, refresh, uid }));
+    return { pseudo, uid };
+  };
+  const identifier = (methode, pseudoSaisi, mdp) => {
+    const id = normaliserPseudo(pseudoSaisi);
+    return appel(`https://identitytoolkit.googleapis.com/v1/accounts:${methode}?key=${cle}`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: id + DOMAINE, password: mdp, returnSecureToken: true }),
+    }).then((r) => entrerSession(r, id));
+  };
+  async function rafraichir() {
+    const r = await appel(`https://securetoken.googleapis.com/v1/token?key=${cle}`, {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "grant_type=refresh_token&refresh_token=" + encodeURIComponent(refresh),
+    });
+    entrerSession(r, pseudo);
+  }
+  async function jetonValide() {
+    if (!jeton || Date.now() > expire - 60000) await rafraichir();
+    return jeton;
+  }
+  return {
+    nom: "firebase",
+    inscrire: (p, m) => identifier("signUp", p, m),
+    connecter: (p, m) => identifier("signInWithPassword", p, m),
+    async reprendre() {
+      const s = lireJson(CLE_SESSION);
+      if (!s || s.mode !== "firebase") return null;
+      refresh = s.refresh; pseudo = s.pseudo;
+      try { await rafraichir(); } catch (e) {
+        if (e.statut === 400) { effacer(CLE_SESSION); return null; }  // session périmée : il faut se reconnecter
+        throw e;
+      }
+      return { pseudo, uid };
+    },
+    async charger() {
+      const t = await jetonValide();
+      try {
+        const d = await appel(`${base}/${uid}`, { headers: { Authorization: "Bearer " + t } });
+        const txt = d.fields && d.fields.etat && d.fields.etat.stringValue;
+        return txt ? JSON.parse(txt) : null;
+      } catch (e) {
+        if (e.statut === 404 && /not found/i.test(e.code)) return null;  // pas encore de sauvegarde : compte tout neuf
+        throw e;
+      }
+    },
+    async sauver(texte, keepalive) {
+      const t = await jetonValide();
+      await appel(`${base}/${uid}?updateMask.fieldPaths=etat&updateMask.fieldPaths=pseudo`, {
+        method: "PATCH", keepalive: !!keepalive,
+        headers: { Authorization: "Bearer " + t, "Content-Type": "application/json" },
+        body: JSON.stringify({ fields: { etat: { stringValue: texte }, pseudo: { stringValue: pseudo } } }),
+      });
+    },
+    deconnecter() { effacer(CLE_SESSION); },
+  };
+}
+
+/* ---------- sauvegarde de la progression : copie dans le navigateur + envoi au compte ---------- */
+let compte = null;          // { pseudo, uid } du joueur connecté
+let backend = null;         // creerLocal() ou creerFirebase()
+let minuteurEnvoi = null, envoiEnCours = false, aEnvoyer = false;
+
+function afficherSauvegarde(texte, ok) {
+  const p = $("#pied-compte");
+  p.textContent = texte;
+  p.classList.toggle("statut-ok", !!ok);
+}
+function sauvegarder() {
+  etat.maj = Date.now();
+  ecrire(CLE_CACHE + compte.uid, JSON.stringify(etat));
+  aEnvoyer = true;
+  afficherSauvegarde("Sauvegarde…");
+  clearTimeout(minuteurEnvoi);
+  minuteurEnvoi = setTimeout(() => envoyer(false), backend.nom === "local" ? 0 : 1500);
+}
+async function envoyer(keepalive) {
+  clearTimeout(minuteurEnvoi);
+  minuteurEnvoi = null;
+  if (envoiEnCours || !aEnvoyer || !compte) return;
+  envoiEnCours = true;
+  aEnvoyer = false;
+  let ok = true;
+  try { await backend.sauver(JSON.stringify(etat), keepalive); } catch (e) { ok = false; aEnvoyer = true; console.warn(e); }
+  envoiEnCours = false;
+  if (!ok) {
+    afficherSauvegarde("Hors ligne : ta progression est gardée sur cet appareil et sera envoyée dès que possible.");
+    minuteurEnvoi = setTimeout(() => envoyer(false), 15000);
+  } else if (aEnvoyer) {
+    envoyer(false);
+  } else {
+    afficherSauvegarde(backend.nom === "local" ? "Enregistré dans ce navigateur" : "Sauvegardé en ligne", true);
+  }
 }
 
 /* ---------- dessin d'une carte ---------- */
@@ -531,6 +898,8 @@ function faceCarte(c, o = {}) {
     art.append(img);
   }
   int.append(art, el("div", "ombre"), el("div", "foil"), el("div", "glare"));
+  const secrete = r === 5 && !o.manquante;
+  if (secrete) int.append(el("div", "s-rayons"), el("div", "s-etoiles"));
 
   int.append(el("span", "code", REGL.codes[r]));
   if (c.tag && !o.manquante) int.append(el("span", "tag", c.tag));
@@ -545,6 +914,7 @@ function faceCarte(c, o = {}) {
 
   ext.append(int);
   if (r >= 4 && !o.manquante) ext.append(el("div", "reflet"));
+  if (secrete) f.append(el("span", "aura"));
   f.append(ext);
 
   if (o.nouvelle) f.append(el("span", "badge", "Nouvelle"));
@@ -567,10 +937,12 @@ function activerInclinaison(zone) {
     zone.style.setProperty("--my", (y * 100).toFixed(1) + "%");
     zone.style.setProperty("--rx", ((0.5 - y) * 16).toFixed(2) + "deg");
     zone.style.setProperty("--ry", ((x - 0.5) * 18).toFixed(2) + "deg");
+    zone.style.setProperty("--px", (x * 2 - 1).toFixed(2));
+    zone.style.setProperty("--py", (y * 2 - 1).toFixed(2));
   });
   const fin = () => {
     zone.classList.remove("survol");
-    for (const k of ["--mx", "--my", "--rx", "--ry"]) zone.style.removeProperty(k);
+    for (const k of ["--mx", "--my", "--rx", "--ry", "--px", "--py"]) zone.style.removeProperty(k);
   };
   zone.addEventListener("pointerleave", fin);
   zone.addEventListener("pointercancel", fin);
@@ -613,6 +985,7 @@ function afficherCarte(i) {
   const b = carteBooster(tirage[i], i);
   $("#courante").replaceChildren(b);
   $("#pile").dataset.reste = Math.min(tirage.length - i - 1, 3);
+  $("#courante").classList.toggle("presage", rang(tirage[i]) === 5);  // la carte secrète tremble avant d'être retournée
   ambiance(null);
   majProgression();
   majBoutons();
@@ -631,6 +1004,20 @@ function majProgression() {
   });
 }
 
+function dispo() { return etat.stock + etat.achetes; }  // boosters normaux utilisables
+function mmss(ms) {
+  const t = Math.max(0, Math.ceil(ms / 1000));
+  return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0");
+}
+const resteAttente = () => etat.horloge + REGL.intervalle_ms - Date.now();
+
+function majPack() {
+  const pret = phase === "pret";
+  $("#pack").disabled = !pret || dispo() <= 0;
+  $("#btn-ur").hidden = !(pret && etat.achetes_ur > 0);
+  if (pret) $("#btn-ur").textContent = `Booster ultra rare garanti (×${etat.achetes_ur})`;
+}
+
 function majBoutons() {
   const enCours = phase === "reveal";
   $("#btn-principal").hidden = !enCours;
@@ -639,12 +1026,17 @@ function majBoutons() {
   if (enCours) {
     $("#btn-principal").textContent = !retournee ? "Retourner la carte" : idx === tirage.length - 1 ? "Voir le résumé" : "Carte suivante";
   }
+  if (phase === "fini") $("#btn-autre").textContent = dispo() + etat.achetes_ur > 0 ? "Ouvrir un autre booster" : "Retour aux boosters";
+  majPack();
 }
 
 function majMessage() {
   const m = $("#message");
   if (phase === "pret") {
-    m.textContent = "Clique sur le booster pour l'ouvrir.";
+    const prochain = etat.stock < REGL.stock_max ? `Le prochain booster gratuit arrive dans ${mmss(resteAttente())}.` : "";
+    if (dispo() > 0) m.textContent = "Clique sur le booster pour l'ouvrir.";
+    else if (etat.achetes_ur > 0) m.textContent = `Tu n'as plus de booster normal. ${prochain}`;
+    else m.textContent = `Tu n'as plus de booster. ${prochain} Tu peux aussi en acheter dans la boutique.`;
   } else if (phase === "ouverture") {
     m.textContent = "";
   } else if (phase === "reveal") {
@@ -657,7 +1049,8 @@ function majMessage() {
   } else if (phase === "fini") {
     const n = tirage.filter((c) => c.nouvelle).length;
     let t = n ? `${pluriel(n, "nouvelle carte", "nouvelles cartes")} dans ce booster.` : "Que des doublons dans ce booster.";
-    if (tirage.some((c) => c.finition === "arc-en-ciel")) t += " Une carte arc-en-ciel !";
+    if (tirage.some((c) => c.rarete === "secrète")) t += " UNE CARTE SECRÈTE !";
+    else if (tirage.some((c) => c.finition === "arc-en-ciel")) t += " Une carte arc-en-ciel !";
     else if (tirage.some((c) => c.finition === "brillante")) t += " Une carte brillante !";
     const gain = tirage.reduce((s, c) => s + (c.pieces || 0), 0);
     if (gain > 0) t += ` Tes doublons rapportent ${pluriel(gain, "pièce", "pièces")}.`;
@@ -666,27 +1059,37 @@ function majMessage() {
   }
 }
 
-async function ouvrir() {
+async function ouvrir(mode = "normal") {
   if (phase !== "pret") return;
   phase = "ouverture";
+  const pack = $("#pack");
+  pack.classList.toggle("ur", mode === "ur");
+  $("#pack-titre").textContent = mode === "ur" ? "Booster UR" : "Booster";
+  majPack();
   majMessage();
   let res;
   try {
-    res = JSON.parse(ouvrirPy(CARTES_TXT, JSON.stringify(etat)));
+    res = JSON.parse(ouvrirPy(CARTES_TXT, JSON.stringify(etat), Date.now(), mode));
   } catch (e) {
     console.error(e);
     phase = "pret";
+    majPack();
     $("#message").textContent = "Le tirage a échoué : " + (e.message || e);
     return;
   }
   etat = res.etat;
+  if (res.erreur) {
+    phase = "pret";
+    majStats(); majPack();
+    $("#message").textContent = res.erreur;
+    return;
+  }
   tirage = res.cartes;
   garantieDeclenchee = res.pitie;
   gainRestant = tirage.reduce((s, c) => s + (c.pieces || 0), 0);
-  ecrireSauvegarde();
+  sauvegarder();
   majStats();
 
-  const pack = $("#pack");
   pack.classList.add("ouvre");
   await attendre(reduit ? 0 : 950);
   pack.hidden = true;
@@ -715,7 +1118,9 @@ function retournerCourante() {
   const r = rang(c);
   if (r >= 2 || c.finition !== "normale") b.classList.add("eclat");
   ambiance(r);
-  if (c.finition === "arc-en-ciel") flash("#ffffff");
+  $("#courante").classList.remove("presage");
+  if (r === 5) revelationSecrete();
+  else if (c.finition === "arc-en-ciel") flash("#ffffff");
   else if (r >= 3) flash(`var(--rc${r})`);
   majProgression();
   majBoutons();
@@ -723,6 +1128,7 @@ function retournerCourante() {
 }
 
 async function suivante() {
+  finSecret();
   if (idx >= tirage.length - 1) return terminer();
   occupe = true;
   const b = $("#courante .carte");
@@ -733,6 +1139,7 @@ async function suivante() {
 
 function passer() {
   if (phase !== "reveal") return;
+  finSecret();
   gainRestant = 0;
   majPieces();
   terminer();
@@ -764,33 +1171,156 @@ function terminer() {
 }
 
 function autreBooster() {
+  finSecret();
   const rangee = $("#rangee");
   rangee.hidden = true;
   rangee.replaceChildren();
   rangee.classList.remove("distribue");
   $("#stage").hidden = true;
   const pack = $("#pack");
-  pack.classList.remove("ouvre");
+  pack.classList.remove("ouvre", "ur");
+  $("#pack-titre").textContent = "Booster";
   pack.hidden = false;
   ambiance(null);
   phase = "pret";
   majBoutons();
   majMessage();
-  pack.focus({ preventScroll: true });
+  if (!pack.disabled) pack.focus({ preventScroll: true });
 }
 
-/* ---------- statistiques ---------- */
+/* ---------- statistiques et réserve de boosters ---------- */
 function majPieces() {
   $("#st-pieces").textContent = etat.monnaie - gainRestant;
+  $("#solde").textContent = etat.monnaie - gainRestant;
 }
 
 function majStats() {
+  const nbDispo = dispo() + etat.achetes_ur;
   $("#st-ouverts").textContent = etat.boosters_ouverts;
+  $("#st-ouverts-lbl").textContent = etat.boosters_ouverts > 1 ? "ouverts" : "ouvert";
+  $("#st-dispo").textContent = nbDispo;
+  $("#st-dispo-lbl").textContent = nbDispo > 1 ? "boosters" : "booster";
   majPieces();
-  $("#st-garantie-titre").textContent = `Carte ${REGL.pitie_rarete} ou mieux garantie`;
-  const restant = Math.max(REGL.pitie_apres - etat.sans_rare, 0) + 1;
-  $("#st-garantie").textContent = `dans ${pluriel(restant, "booster", "boosters")} au plus`;
-  $("#jauge").style.width = Math.min(etat.sans_rare / REGL.pitie_apres, 1) * 100 + "%";
+  majReserve();
+}
+
+function majReserve() {
+  const max = REGL.stock_max;
+  $("#st-stock").textContent = `${etat.stock} / ${max}`;
+  let note, part;
+  if (etat.stock >= max) {
+    note = "Réserve pleine : ouvre un booster pour relancer l'attente.";
+    part = 1;
+  } else {
+    const reste = resteAttente();
+    note = `Prochain booster gratuit dans ${mmss(reste)}.`;
+    part = 1 - Math.min(Math.max(reste / REGL.intervalle_ms, 0), 1);
+  }
+  const achetes = [];
+  if (etat.achetes > 0) achetes.push(pluriel(etat.achetes, "booster acheté", "boosters achetés"));
+  if (etat.achetes_ur > 0) achetes.push(pluriel(etat.achetes_ur, "booster ultra rare garanti", "boosters ultra rare garantis"));
+  if (achetes.length) note += " En plus : " + achetes.join(" et ") + ".";
+  $("#st-note").textContent = note;
+  $("#jauge").style.width = part * 100 + "%";
+}
+
+/* le temps passe : un booster gratuit de plus toutes les 15 minutes */
+function synchroniser() {
+  etat = JSON.parse(synchroPy(JSON.stringify(etat), Date.now()));
+  sauvegarder();
+  majStats();
+  majPack();
+  majBoutons();
+  if (phase === "pret") majMessage();
+  if (!$("#v-boutique").hidden) rendreBoutique();
+}
+function tictac() {
+  if (!compte || !etat) return;
+  if (etat.stock < REGL.stock_max && Date.now() >= etat.horloge + REGL.intervalle_ms) synchroniser();
+  else {
+    majReserve();
+    if (phase === "pret" && dispo() <= 0) majMessage();
+  }
+}
+
+/* ---------- la carte secrète : un vrai moment ---------- */
+let minuteurSecret = null;
+function revelationSecrete() {
+  if (reduit) { flash("#ffffff"); return; }
+  const fx = $("#secret-fx");
+  const gerbe = $("#fx-etincelles");
+  gerbe.replaceChildren();
+  for (let i = 0; i < 52; i++) {
+    const s = el("span");
+    s.style.setProperty("--a", (Math.random() * 360).toFixed(0) + "deg");
+    s.style.setProperty("--d", (14 + Math.random() * 46).toFixed(0) + "vmin");
+    s.style.setProperty("--z", (0.5 + Math.random() * 1.5).toFixed(2));
+    s.style.setProperty("--t", (1 + Math.random() * 1.5).toFixed(2) + "s");
+    gerbe.append(s);
+  }
+  const ban = $("#secret-banniere");
+  const cr = $("#courante").getBoundingClientRect();   // la bannière se pose sur la carte, puis s'efface
+  ban.style.top = Math.max(cr.top + cr.height * 0.4 - ban.offsetHeight / 2, 8) + "px";
+  fx.classList.remove("on"); ban.classList.remove("on");
+  void fx.offsetWidth;
+  fx.classList.add("on"); ban.classList.add("on");
+  flash("#ffffff");
+  setTimeout(() => flash("#9ec5ff"), 380);
+  const sc = $("#scene");
+  sc.classList.remove("secoue"); void sc.offsetWidth; sc.classList.add("secoue");
+  if (navigator.vibrate) navigator.vibrate([90, 50, 90, 50, 220]);
+  clearTimeout(minuteurSecret);
+  minuteurSecret = setTimeout(finSecret, 12000);
+}
+function finSecret() {
+  clearTimeout(minuteurSecret);
+  $("#secret-fx").classList.remove("on");
+  $("#secret-banniere").classList.remove("on");
+  $("#scene").classList.remove("secoue");
+}
+
+/* ---------- boutique ---------- */
+function rendreBoutique() {
+  const zone = $("#boutique");
+  const solde = etat.monnaie - gainRestant;
+  $("#solde").textContent = solde;
+  zone.replaceChildren(...REGL.boutique.map((o) => {
+    const a = el("div", "panneau article");
+    const haut = el("div", "article-haut");
+    const mini = el("span", "mini" + (o.id === "x10" ? " x10" : o.id === "ur" ? " ur" : ""), o.id === "x10" ? "×10" : o.id === "ur" ? "UR" : "1");
+    mini.setAttribute("aria-hidden", "true");
+    const txt = el("div");
+    txt.append(el("h3", "", o.nom), el("p", "", o.texte));
+    haut.append(mini, txt);
+    const prix = el("div", "prix");
+    prix.append(el("b", "", String(o.prix)), el("span", "", "pièces"));
+    const b = el("button", "btn", solde >= o.prix ? "Acheter" : "Pas assez de pièces");
+    b.type = "button";
+    b.disabled = solde < o.prix;
+    b.addEventListener("click", () => acheter(o.id));
+    a.append(haut, prix, b);
+    return a;
+  }));
+}
+
+function acheter(id) {
+  const msg = $("#boutique-msg");
+  if (phase === "ouverture" || phase === "reveal") { msg.textContent = "Termine d'abord d'ouvrir ton booster."; return; }
+  let r;
+  try { r = JSON.parse(acheterPy(JSON.stringify(etat), id, Date.now())); }
+  catch (e) { console.error(e); msg.textContent = "L'achat a échoué."; return; }
+  etat = r.etat;
+  if (r.erreur) {
+    msg.textContent = r.erreur;
+  } else {
+    const o = REGL.boutique.find((x) => x.id === id);
+    msg.textContent = `Acheté : ${o.nom}.`;
+    sauvegarder();
+  }
+  majStats();
+  majPack();
+  if (phase === "fini") majBoutons();
+  rendreBoutique();
 }
 
 /* ---------- collection ---------- */
@@ -970,25 +1500,32 @@ function rendreInfos() {
   const nbCartes = REGL.ordre.map((r) => CARTES.filter((c) => c.rarete === r).length);
   const poids = REGL.poids.map((p, r) => (nbCartes[r] ? p : 0));
   const total = poids.reduce((a, b) => a + b, 0);
-  const iG = REGL.ordre.indexOf(REGL.garantie_derniere);
-  const totalG = poids.reduce((a, p, r) => a + (r >= iG ? p : 0), 0);
+  const n = REGL.taille_booster;
+  const iG = REGL.garantie_derniere ? REGL.ordre.indexOf(REGL.garantie_derniere) : -1;
+  const totalG = poids.reduce((a, p, r) => a + (iG >= 0 && r >= iG ? p : 0), 0);
 
   const taux = REGL.ordre.map((nom, r) => {
     const p = poids[r] / total;
-    const pDerniere = r >= iG ? poids[r] / totalG : 0;
-    const pBooster = 1 - Math.pow(1 - p, REGL.taille_booster - 1) * (1 - pDerniere);
-    return { r, cellules: [majuscule(nom), String(nbCartes[r]), pourcent(p), nbCartes[r] ? uneSur(pBooster) : "—"] };
+    const pDerniere = iG >= 0 && r >= iG ? poids[r] / totalG : 0;
+    const pBooster = iG >= 0 ? 1 - Math.pow(1 - p, n - 1) * (1 - pDerniere) : 1 - Math.pow(1 - p, n);
+    const pPrecise = nbCartes[r] ? 1 - Math.pow(1 - p / nbCartes[r], n) : 0;
+    return { r, cellules: [majuscule(nom), String(nbCartes[r]), pourcent(p), nbCartes[r] ? uneSur(pBooster) : "—", nbCartes[r] ? uneSur(pPrecise) : "—"] };
   });
   const valeurs = REGL.ordre.map((nom, r) => ({
     r, cellules: [majuscule(nom), ...FINITIONS.map((f) => String(Math.floor(REGL.valeurs[r] * (REGL.bonus[f] || 1) + 0.5)))],
   }));
+  const offres = REGL.boutique.map((o) => ({ r: "", cellules: [o.nom, o.prix + " pièces", o.texte] }));
+  const minutes = Math.round(REGL.intervalle_ms / 60000);
 
   const infos = $("#infos");
   infos.replaceChildren(
-    bloc("Chances de tirage", `Un booster contient ${REGL.taille_booster} cartes, et la dernière est toujours ${REGL.garantie_derniere} ou mieux. Les chiffres sont des moyennes.`,
-      tableau(["Rareté", "Cartes", "Par carte", "Dans un booster"], taux)),
+    bloc("Chances de tirage", `Un booster contient ${pluriel(n, "carte", "cartes")}` +
+      (iG >= 0 ? `, et la dernière est toujours ${REGL.garantie_derniere} ou mieux` : "") + ". Les chiffres sont des moyennes.",
+      tableau(["Rareté", "Cartes", "Par carte tirée", "Dans un booster", "Une carte précise"], taux)),
     el("div", "deux-col"),
-    bloc("Garantie", `Si tu n'as pas eu de carte ${REGL.pitie_rarete} ou mieux pendant ${REGL.pitie_apres} boosters, le suivant en contient une.`),
+    bloc("Boosters gratuits et boutique", `Tu reçois un booster gratuit toutes les ${minutes} minutes, ${REGL.stock_max} au maximum en réserve : ` +
+      "quand elle est pleine, l'attente s'arrête jusqu'à ce que tu en ouvres un. Les boosters achetés ne comptent pas dans cette limite.",
+      tableau(["Offre", "Prix", "Contenu"], offres)),
   );
   infos.children[1].append(
     bloc("Pièces gagnées avec un doublon", "Plus la carte est rare, plus elle rapporte, et les finitions rapportent un peu plus.",
@@ -996,62 +1533,189 @@ function rendreInfos() {
     bloc("Finitions", `Chaque carte tirée peut être brillante (${uneSur(REGL.chance_brillante)}) ou arc-en-ciel (${uneSur(REGL.chance_arc)}), quelle que soit sa rareté. ` +
       "La brillante a un reflet blanc qui balaie la carte. L'arc-en-ciel a un cadre et des reflets multicolores, d'autant plus marqués que la carte est rare."),
   );
+  if (REGL.pitie_apres) {
+    infos.append(bloc("Garantie", `Si tu n'as pas eu de carte ${REGL.pitie_rarete} ou mieux pendant ${REGL.pitie_apres} boosters, le suivant en contient une.`));
+  }
 }
 
 /* ---------- onglets ---------- */
 function onglet(nom) {
-  for (const n of ["boosters", "collection", "infos"]) {
+  for (const n of ["boosters", "collection", "boutique", "infos"]) {
     $("#t-" + n).setAttribute("aria-selected", String(n === nom));
     $("#v-" + n).hidden = n !== nom;
   }
   if (nom === "collection") majCollection();
+  if (nom === "boutique") { $("#boutique-msg").textContent = ""; rendreBoutique(); }
 }
 
 /* ---------- démarrage ---------- */
 async function texte(url) {
-  const r = await fetch(url);
+  const r = await fetch(url, { cache: "no-cache" });  // revérifie à chaque visite : plus d'ancienne version gardée en mémoire
   if (!r.ok) throw new Error(url + " : erreur " + r.status);
   return r.text();
 }
 
+let synchroPy = null, acheterPy = null, nouvelEtatPy = null;
+let moteurPret = null;
+let modeConnexion = "connecter";
+let minuteurHorloge = null;
+
+async function chargerMoteur() {
+  const [cartesTxt, moteurSrc] = await Promise.all([texte("cartes.json"), texte("moteur.py")]);
+  CARTES_TXT = cartesTxt;
+  CARTES = JSON.parse(cartesTxt);
+  const pyodide = await loadPyodide();
+  pyodide.runPython(moteurSrc);
+  const g = (nom) => pyodide.globals.get(nom);
+  ouvrirPy = g("ouvrir_booster_web");
+  synchroPy = g("synchroniser_web");
+  acheterPy = g("acheter_web");
+  nouvelEtatPy = g("nouvel_etat_web");
+  REGL = JSON.parse(g("reglages_web")());
+
+  $("#pack-nb").textContent = pluriel(REGL.taille_booster, "carte", "cartes");
+  $("#pack-etoile").append(etoile());
+  const points = $("#pack-points");
+  REGL.ordre.forEach((_, r) => { const p = el("span"); p.dataset.r = r; points.append(p); });
+  rendreInfos();
+}
+
+function erreurDemarrage(e) {
+  console.error(e);
+  const t = "Le jeu n'a pas pu démarrer (" + (e.message || e) + "). " +
+    "Ouvre la page depuis son adresse en ligne, ou en local avec « python -m http.server », pas en double-cliquant sur le fichier.";
+  $("#message").textContent = t;
+  $("#c-erreur").textContent = t;
+}
+
+function montrerConnexion(message) {
+  $("#ecran-connexion").hidden = false;
+  $("#c-erreur").textContent = message || "";
+  $("#c-mode").textContent = backend.nom === "local"
+    ? "Mode sans serveur : les comptes sont enregistrés dans ce navigateur seulement (voir LISEZMOI.md pour les comptes en ligne)."
+    : "";
+  choisirMode(modeConnexion);
+  $("#c-pseudo").focus();
+}
+
+function choisirMode(mode) {
+  modeConnexion = mode;
+  const ins = mode === "inscrire";
+  $("#c-connecter").setAttribute("aria-pressed", String(!ins));
+  $("#c-inscrire").setAttribute("aria-pressed", String(ins));
+  $("#c-connecter").setAttribute("aria-selected", String(!ins));
+  $("#c-inscrire").setAttribute("aria-selected", String(ins));
+  $("#c-valider").textContent = ins ? "Créer mon compte" : "Se connecter";
+  $("#c-mdp").autocomplete = ins ? "new-password" : "current-password";
+  $("#c-aide").textContent = ins
+    ? "Choisis un pseudo (3 à 20 caractères, sans espace) et un mot de passe de 6 caractères minimum. Pas besoin d'e-mail."
+    : "";
+  $("#c-erreur").textContent = "";
+}
+
+/* le joueur est connecté : on charge sa progression et on lance le jeu */
+async function entrer(session) {
+  await moteurPret;
+  compte = session;
+  const maintenant = Date.now();
+  let distant = null, enLigne = true;
+  try { distant = await backend.charger(); } catch (e) { enLigne = false; console.warn(e); }
+  const cache = lireJson(CLE_CACHE + session.uid);
+  if (!enLigne && !cache) {
+    compte = null;
+    throw new Error("Impossible de charger ta collection : pas de connexion au service de comptes. Réessaie dans un instant.");
+  }
+  let brut = distant;
+  if (cache && (!distant || (cache.maj || 0) > (distant.maj || 0))) brut = cache;
+  if (!brut) brut = JSON.parse(nouvelEtatPy(maintenant));
+  etat = JSON.parse(synchroPy(JSON.stringify(brut), maintenant));
+
+  $("#st-pseudo").textContent = session.pseudo;
+  $("#puce-compte").hidden = false;
+  phase = "pret";
+  sauvegarder();
+  majStats();
+  majCollection();
+  rendreBoutique();
+  for (const n of ["collection", "boutique", "infos"]) $("#t-" + n).disabled = false;
+  autreBooster();
+  $("#ecran-connexion").hidden = true;
+  clearInterval(minuteurHorloge);
+  minuteurHorloge = setInterval(tictac, 1000);
+  if (!enLigne) afficherSauvegarde("Hors ligne : ta progression est gardée sur cet appareil et sera envoyée dès que possible.");
+}
+
 async function demarrer() {
   try {
-    const [cartesTxt, moteurSrc] = await Promise.all([texte("cartes.json"), texte("moteur.py")]);
-    CARTES_TXT = cartesTxt;
-    CARTES = JSON.parse(cartesTxt);
-    const pyodide = await loadPyodide();
-    pyodide.runPython(moteurSrc);
-    ouvrirPy = pyodide.globals.get("ouvrir_booster_web");
-    REGL = JSON.parse(pyodide.globals.get("reglages_web")());
-    etat = lireSauvegarde() || REGL.etat_initial;
-
-    $("#pack-nb").textContent = pluriel(REGL.taille_booster, "carte", "cartes");
-    $("#pack-etoile").append(etoile());
-    const points = $("#pack-points");
-    REGL.ordre.forEach((_, r) => { const p = el("span"); p.dataset.r = r; points.append(p); });
-
-    majStats();
-    majCollection();
-    rendreInfos();
-    $("#t-collection").disabled = false;
-    $("#t-infos").disabled = false;
-    $("#pack").disabled = false;
-    phase = "pret";
-    majMessage();
+    const cfg = window.FIREBASE_CONFIG;
+    backend = cfg && cfg.apiKey && cfg.projectId ? creerFirebase(cfg) : creerLocal();
+    moteurPret = chargerMoteur();
+    moteurPret.catch(erreurDemarrage);
+    let session = null, message = "";
+    try { session = await backend.reprendre(); } catch (e) { message = e.message; }
+    if (session) {
+      try { await entrer(session); return; } catch (e) { message = e.message || String(e); }
+    }
+    montrerConnexion(message);
   } catch (e) {
-    console.error(e);
-    $("#message").textContent =
-      "Le jeu n'a pas pu démarrer (" + (e.message || e) + "). " +
-      "Ouvre la page depuis son adresse en ligne, ou en local avec « python -m http.server », pas en double-cliquant sur le fichier.";
+    erreurDemarrage(e);
   }
 }
 
-$("#pack").addEventListener("click", ouvrir);
+/* quand on quitte l'onglet : on envoie tout de suite ; quand on revient : on regarde si un autre appareil a joué */
+async function rafraichirDepuisLeCompte() {
+  if (!compte || backend.nom !== "firebase" || envoiEnCours || aEnvoyer) return;
+  if (phase !== "pret" && phase !== "fini") return;
+  try {
+    const d = await backend.charger();
+    if (d && (d.maj || 0) > (etat.maj || 0) && !aEnvoyer && (phase === "pret" || phase === "fini")) {
+      etat = JSON.parse(synchroPy(JSON.stringify(d), Date.now()));
+      ecrire(CLE_CACHE + compte.uid, JSON.stringify(etat));
+      majStats(); majCollection(); rendreBoutique(); majBoutons();
+      if (phase === "pret") majMessage();
+    }
+  } catch (_) { /* hors ligne : on garde ce qu'on a */ }
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) envoyer(true);
+  else if (compte) { tictac(); rafraichirDepuisLeCompte(); }
+});
+addEventListener("pagehide", () => envoyer(true));
+
+$("#c-connecter").addEventListener("click", () => choisirMode("connecter"));
+$("#c-inscrire").addEventListener("click", () => choisirMode("inscrire"));
+$("#form-connexion").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const erreur = $("#c-erreur");
+  const pseudo = $("#c-pseudo").value, mdp = $("#c-mdp").value;
+  const probleme = verifierPseudo(pseudo);
+  if (probleme) { erreur.textContent = probleme; return; }
+  if (modeConnexion === "inscrire" && mdp.length < 6) { erreur.textContent = "Mot de passe trop court : 6 caractères minimum."; return; }
+  erreur.textContent = "";
+  const bouton = $("#c-valider");
+  const libelle = bouton.textContent;
+  bouton.disabled = true;
+  bouton.textContent = "Un instant…";
+  try {
+    const session = modeConnexion === "inscrire" ? await backend.inscrire(pseudo, mdp) : await backend.connecter(pseudo, mdp);
+    await entrer(session);
+    $("#c-mdp").value = "";
+  } catch (err) {
+    erreur.textContent = err.message || String(err);
+  } finally {
+    bouton.disabled = false;
+    bouton.textContent = libelle;
+  }
+});
+
+$("#pack").addEventListener("click", () => ouvrir("normal"));
+$("#btn-ur").addEventListener("click", () => ouvrir("ur"));
 $("#btn-principal").addEventListener("click", avancer);
 $("#btn-passer").addEventListener("click", passer);
 $("#btn-autre").addEventListener("click", autreBooster);
 $("#t-boosters").addEventListener("click", () => onglet("boosters"));
 $("#t-collection").addEventListener("click", () => onglet("collection"));
+$("#t-boutique").addEventListener("click", () => onglet("boutique"));
 $("#t-infos").addEventListener("click", () => onglet("infos"));
 $("#zoom-fermer").addEventListener("click", () => $("#zoom").close());
 $("#zoom-prec").addEventListener("click", () => naviguerZoom(-1));
@@ -1062,14 +1726,20 @@ $("#zoom").addEventListener("keydown", (e) => {
   else if (e.key === "ArrowRight") naviguerZoom(1);
 });
 $("#zoom").addEventListener("close", () => { if (declencheurZoom && declencheurZoom.isConnected) declencheurZoom.focus({ preventScroll: true }); });
+$("#deconnexion").addEventListener("click", async () => {
+  await envoyer(false);
+  backend.deconnecter();
+  location.reload();
+});
 $("#reset").addEventListener("click", () => {
-  if (phase === "chargement") return;
-  if (!confirm("Effacer toute ta collection et repartir de zéro ?")) return;
-  etat = structuredClone(REGL.etat_initial);
+  if (phase === "chargement" || !compte) return;
+  if (!confirm("Effacer toute ta collection, tes pièces et tes boosters, et repartir de zéro ?")) return;
+  etat = JSON.parse(nouvelEtatPy(Date.now()));
   gainRestant = 0;
-  ecrireSauvegarde();
+  sauvegarder();
   majStats();
   majCollection();
+  rendreBoutique();
   if (phase !== "ouverture") autreBooster();
 });
 

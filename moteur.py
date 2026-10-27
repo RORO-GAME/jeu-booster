@@ -10,17 +10,17 @@ import random
 # ----------------------------------------------------------------------
 # RÉGLAGES : c'est ici que tu joues avec l'équilibrage
 # ----------------------------------------------------------------------
-# Poids de chaque rareté (plus c'est grand, plus c'est fréquent).
-# Sur 1000 cartes tirées : environ 560 communes, 270 rares, 115 super rares,
-# 45 ultra rares, 5 légendaires, et une secrète toutes les 2500 cartes.
-RARETES = {
-    "commune": 56,
-    "rare": 27,
-    "super rare": 11.5,
-    "ultra rare": 4.5,
+# Chance (en %) qu'UNE carte tirée soit de cette rareté. La commune, c'est le reste.
+# Dans un booster de 3 cartes, la chance d'avoir au moins une carte d'une rareté est donc
+# un peu moins de 3 fois plus grande (la page Infos du site la calcule pour toi).
+_TAUX = {
+    "rare": 20,
+    "super rare": 6,
+    "ultra rare": 1.8,
     "légendaire": 0.5,
-    "secrète": 0.04,
+    "secrète": 0.05,
 }
+RARETES = {"commune": round(100 - sum(_TAUX.values()), 4), **_TAUX}
 ORDRE = list(RARETES)  # de la plus commune à la plus rare
 
 # Le petit code affiché dans le coin de chaque carte
@@ -33,15 +33,19 @@ CODES = {
     "secrète": "S",
 }
 
-TAILLE_BOOSTER = 5            # nombre de cartes par booster
-GARANTIE_DERNIERE = "rare"    # la dernière carte du booster est au moins de cette rareté
-PITIE_APRES = 8               # après N boosters sans carte "PITIE_RARETE" ou mieux...
-PITIE_RARETE = "super rare"   # ...le booster suivant en contient une
+TAILLE_BOOSTER = 3            # nombre de cartes par booster
+
+# Garanties, éteintes pour que les taux ci-dessus soient les vrais taux.
+# Pour les rallumer : GARANTIE_DERNIERE = "rare" (la dernière carte est au moins "rare"),
+# PITIE_APRES = 8 (après 8 boosters sans carte "super rare" ou mieux, le suivant en contient une).
+GARANTIE_DERNIERE = None
+PITIE_APRES = None
+PITIE_RARETE = "super rare"
 
 # Finitions : chance qu'une carte tirée soit brillante ou arc-en-ciel,
-# quelle que soit sa rareté (0.06 = 6 %).
-CHANCE_BRILLANTE = 0.06
-CHANCE_ARC_EN_CIEL = 0.015
+# quelle que soit sa rareté (0.02 = 2 %).
+CHANCE_BRILLANTE = 0.02
+CHANCE_ARC_EN_CIEL = 0.005
 
 # Monnaie : un doublon (une carte que tu as déjà) rapporte des pièces.
 # Plus la carte est rare, plus elle rapporte. Une carte brillante ou arc-en-ciel
@@ -56,17 +60,94 @@ VALEUR_DOUBLON = {
 }
 BONUS_FINITION = {"normale": 1, "brillante": 1.5, "arc-en-ciel": 2}
 
+# Boosters gratuits : un nouveau booster toutes les 15 minutes, 10 au maximum en réserve.
+INTERVALLE_SECONDES = 15 * 60
+STOCK_MAX = 10
+BOOSTERS_DEPART = 3           # boosters offerts à la création d'un compte
+
+# Boutique : "boosters" = boosters normaux ajoutés, "ur" = boosters "ultra rare garantie" ajoutés.
+# Les boosters achetés ne sont pas limités par STOCK_MAX.
+BOUTIQUE = [
+    {"id": "unite", "nom": "1 booster", "prix": 20, "boosters": 1, "ur": 0,
+     "texte": "Un booster de plus, tout de suite."},
+    {"id": "x10", "nom": "10 boosters", "prix": 180, "boosters": 10, "ur": 0,
+     "texte": "Dix boosters pour le prix de neuf."},
+    {"id": "ur", "nom": "Booster ultra rare", "prix": 200, "boosters": 0, "ur": 1,
+     "texte": "Une carte ultra rare ou mieux est garantie."},
+]
+
+
+# ----------------------------------------------------------------------
+# État du joueur
+# ----------------------------------------------------------------------
+def etat_initial(maintenant=0):
+    # collection : {id de la carte (texte): nombre d'exemplaires}
+    # finitions  : {id de la carte (texte): {"brillante": n, "arc-en-ciel": n}}
+    # monnaie    : pièces gagnées avec les doublons, moins celles dépensées
+    # stock      : boosters gratuits en réserve (maximum STOCK_MAX)
+    # horloge    : instant (en millisecondes) où a commencé l'attente du prochain booster gratuit
+    # achetes    : boosters achetés dans la boutique ; achetes_ur : boosters ultra rare garantie achetés
+    return {
+        "collection": {}, "finitions": {}, "monnaie": 0, "boosters_ouverts": 0, "sans_rare": 0,
+        "stock": BOOSTERS_DEPART, "horloge": int(maintenant), "achetes": 0, "achetes_ur": 0,
+    }
+
+
+def synchroniser(etat, maintenant):
+    """Complète une ancienne sauvegarde et ajoute les boosters gagnés avec le temps qui passe."""
+    maintenant = int(maintenant)
+    for cle, valeur in etat_initial(maintenant).items():
+        etat.setdefault(cle, valeur)
+    intervalle = INTERVALLE_SECONDES * 1000
+    if etat["stock"] >= STOCK_MAX or etat["horloge"] > maintenant:
+        etat["horloge"] = maintenant  # réserve pleine : pas d'attente en cours
+    else:
+        gagnes = (maintenant - etat["horloge"]) // intervalle
+        etat["stock"] = min(STOCK_MAX, etat["stock"] + gagnes)
+        etat["horloge"] += gagnes * intervalle
+        if etat["stock"] >= STOCK_MAX:
+            etat["horloge"] = maintenant
+    return etat
+
+
+def boosters_disponibles(etat):
+    return etat["stock"] + etat["achetes"]
+
+
+def utiliser_booster(etat, mode, maintenant):
+    """Retire un booster de la réserve (gratuit d'abord, puis acheté). ValueError s'il n'y en a plus."""
+    synchroniser(etat, maintenant)
+    if mode == "ur":
+        if etat["achetes_ur"] <= 0:
+            raise ValueError("Tu n'as plus de booster ultra rare garanti.")
+        etat["achetes_ur"] -= 1
+    elif etat["stock"] > 0:
+        if etat["stock"] >= STOCK_MAX:
+            etat["horloge"] = int(maintenant)  # la réserve était pleine : l'attente repart maintenant
+        etat["stock"] -= 1
+    elif etat["achetes"] > 0:
+        etat["achetes"] -= 1
+    else:
+        raise ValueError("Tu n'as plus de booster. Le prochain arrive bientôt.")
+
+
+def acheter(etat, offre_id, maintenant):
+    """Achète une offre de la boutique. Renvoie None si c'est réussi, sinon le message d'erreur."""
+    synchroniser(etat, maintenant)
+    offre = next((o for o in BOUTIQUE if o["id"] == offre_id), None)
+    if offre is None:
+        return "Cette offre n'existe pas."
+    if etat["monnaie"] < offre["prix"]:
+        return "Tu n'as pas assez de pièces."
+    etat["monnaie"] -= offre["prix"]
+    etat["achetes"] += offre["boosters"]
+    etat["achetes_ur"] += offre["ur"]
+    return None
+
 
 # ----------------------------------------------------------------------
 # Logique de tirage
 # ----------------------------------------------------------------------
-def etat_initial():
-    # collection : {id de la carte (texte): nombre d'exemplaires}
-    # finitions  : {id de la carte (texte): {"brillante": n, "arc-en-ciel": n}}
-    # monnaie    : nombre de pièces gagnées avec les doublons
-    return {"collection": {}, "finitions": {}, "monnaie": 0, "boosters_ouverts": 0, "sans_rare": 0}
-
-
 def tirer_carte(cartes, rarete_min=None):
     """Tire une carte au hasard, avec les probabilités de RARETES."""
     debut = ORDRE.index(rarete_min) if rarete_min else 0
@@ -92,9 +173,10 @@ def tirer_finition():
     return "normale"
 
 
-def ouvrir_booster(cartes, etat):
-    """Ouvre un booster et met l'état à jour.
+def tirer_booster(cartes, etat, mode="normal"):
+    """Tire les cartes d'un booster et met la collection à jour (sans toucher à la réserve de boosters).
 
+    mode "ur" : booster ultra rare garanti (au moins une carte ultra rare ou mieux).
     Renvoie (liste de cartes, pitie_declenchee). Chaque carte est une copie
     avec des clés en plus :
     - "finition" : "normale", "brillante" ou "arc-en-ciel"
@@ -104,18 +186,23 @@ def ouvrir_booster(cartes, etat):
     """
     etat.setdefault("finitions", {})
     etat.setdefault("monnaie", 0)
+    etat.setdefault("sans_rare", 0)
 
-    tirage = [tirer_carte(cartes) for _ in range(TAILLE_BOOSTER - 1)]
-    tirage.append(tirer_carte(cartes, GARANTIE_DERNIERE))  # dernière carte : rareté minimale
+    tirage = [tirer_carte(cartes) for _ in range(TAILLE_BOOSTER)]
+    if GARANTIE_DERNIERE:
+        tirage[-1] = tirer_carte(cartes, GARANTIE_DERNIERE)  # dernière carte : rareté minimale
 
-    # système de pitié : on force une carte assez rare, seulement si le booster n'en a pas déjà une
-    seuil = ORDRE.index(PITIE_RARETE)
-
-    def a_une_belle_carte(liste):
+    def au_moins(liste, rarete):
+        seuil = ORDRE.index(rarete)
         return any(ORDRE.index(c["rarete"]) >= seuil for c in liste)
 
+    # booster ultra rare garanti : si le tirage n'en contient pas, la dernière carte en devient une
+    if mode == "ur" and not au_moins(tirage, "ultra rare"):
+        tirage[-1] = tirer_carte(cartes, "ultra rare")
+
+    # système de pitié (éteint par défaut)
     pitie = False
-    if etat["sans_rare"] >= PITIE_APRES and not a_une_belle_carte(tirage):
+    if PITIE_APRES and etat["sans_rare"] >= PITIE_APRES and not au_moins(tirage, PITIE_RARETE):
         tirage[-1] = tirer_carte(cartes, PITIE_RARETE)
         pitie = True
 
@@ -138,11 +225,11 @@ def ouvrir_booster(cartes, etat):
             finitions_vues.setdefault(cle, set()).add(fin)
 
     # mise à jour de l'état
-    if a_une_belle_carte(tirage):
+    if au_moins(tirage, PITIE_RARETE):
         etat["sans_rare"] = 0
     else:
         etat["sans_rare"] += 1
-    etat["boosters_ouverts"] += 1
+    etat["boosters_ouverts"] = etat.get("boosters_ouverts", 0) + 1
     for c in resultat:
         cle = str(c["id"])
         etat["collection"][cle] = etat["collection"].get(cle, 0) + 1
@@ -151,6 +238,12 @@ def ouvrir_booster(cartes, etat):
             f = etat["finitions"].setdefault(cle, {})
             f[c["finition"]] = f.get(c["finition"], 0) + 1
     return resultat, pitie
+
+
+def ouvrir_booster(cartes, etat, maintenant, mode="normal"):
+    """Utilise un booster de la réserve, puis le tire. ValueError s'il n'y en a plus."""
+    utiliser_booster(etat, mode, maintenant)
+    return tirer_booster(cartes, etat, mode)
 
 
 # ----------------------------------------------------------------------
@@ -169,12 +262,32 @@ def reglages_web():
         "taille_booster": TAILLE_BOOSTER,
         "pitie_apres": PITIE_APRES,
         "pitie_rarete": PITIE_RARETE,
-        "etat_initial": etat_initial(),
+        "intervalle_ms": INTERVALLE_SECONDES * 1000,
+        "stock_max": STOCK_MAX,
+        "depart": BOOSTERS_DEPART,
+        "boutique": BOUTIQUE,
     }, ensure_ascii=False)
 
 
-def ouvrir_booster_web(cartes_json, etat_json):
+def nouvel_etat_web(maintenant):
+    return json.dumps(etat_initial(maintenant), ensure_ascii=False)
+
+
+def synchroniser_web(etat_json, maintenant):
+    return json.dumps(synchroniser(json.loads(etat_json), maintenant), ensure_ascii=False)
+
+
+def ouvrir_booster_web(cartes_json, etat_json, maintenant, mode):
     cartes = json.loads(cartes_json)
     etat = json.loads(etat_json)
-    tirage, pitie = ouvrir_booster(cartes, etat)
+    try:
+        tirage, pitie = ouvrir_booster(cartes, etat, maintenant, mode)
+    except ValueError as e:
+        return json.dumps({"erreur": str(e), "etat": etat}, ensure_ascii=False)
     return json.dumps({"cartes": tirage, "pitie": pitie, "etat": etat}, ensure_ascii=False)
+
+
+def acheter_web(etat_json, offre_id, maintenant):
+    etat = json.loads(etat_json)
+    erreur = acheter(etat, offre_id, maintenant)
+    return json.dumps({"erreur": erreur, "etat": etat}, ensure_ascii=False)
