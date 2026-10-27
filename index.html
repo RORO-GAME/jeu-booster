@@ -282,7 +282,7 @@ button.carte-fixe { cursor: pointer; }
 @keyframes lueur-texte { to { background-position: -250% 0; } }
 
 /* le cadre : un anneau de lumière qui tourne */
-[data-r="5"]:not(.manquante) .ext {
+.recto[data-r="5"]:not(.manquante) .ext {
   background: conic-gradient(from var(--ang, 0deg), #ffffff, #9ec5ff 14%, #ffffff 28%, #f0c2ff 42%, #ffffff 56%, #9ef0ff 70%, #ffffff 84%, #c8d4ff);
   animation: tourne 5s linear infinite;
   box-shadow: 0 0 4cqw rgba(190, 215, 255, .75), 0 1.5cqw 5cqw rgba(0, 0, 0, .55);
@@ -292,9 +292,9 @@ button.carte-fixe { cursor: pointer; }
   background: conic-gradient(from var(--ang, 0deg), #ffffff, #7aa7ff, #ffffff, #e0a8ff, #ffffff, #7af0ff, #ffffff);
   filter: blur(5cqw); animation: tourne 4s linear infinite, respire 3s ease-in-out infinite; }
 /* l'illustration suit le mouvement, mais à l'envers : effet de profondeur */
-[data-r="5"]:not(.manquante) .art { transform: translate(calc(var(--px, 0) * -2.2cqw), calc(var(--py, 0) * -2.2cqw)) scale(1.1); transition: transform .12s linear; }
-[data-r="5"]:not(.manquante) .foil { opacity: .16; animation: derive 6s linear infinite alternate; }
-[data-r="5"]:not(.manquante) .glare { opacity: 1; }
+.recto[data-r="5"]:not(.manquante) .art { transform: translate(calc(var(--px, 0) * -2.2cqw), calc(var(--py, 0) * -2.2cqw)) scale(1.1); transition: transform .12s linear; }
+.recto[data-r="5"]:not(.manquante) .foil { opacity: .16; animation: derive 6s linear infinite alternate; }
+.recto[data-r="5"]:not(.manquante) .glare { opacity: 1; }
 /* des rayons de lumière qui tournent lentement derrière tout */
 .s-rayons { position: absolute; inset: -90%; pointer-events: none; mix-blend-mode: overlay; opacity: .6;
   background: repeating-conic-gradient(from 0deg, transparent 0 8deg, rgba(255, 255, 255, .75) 11deg, transparent 15deg 22deg);
@@ -307,12 +307,12 @@ button.carte-fixe { cursor: pointer; }
     radial-gradient(circle, #fff 0 .3cqw, transparent .8cqw) 3cqw 5cqw / 8cqw 9cqw;
   transform: translate(calc(var(--px, 0) * 2cqw), calc(var(--py, 0) * 2cqw));
   animation: monte 7s linear infinite, scintille 2.4s ease-in-out infinite; }
-[data-r="5"]:not(.manquante) .nom { color: transparent; text-shadow: none; filter: drop-shadow(0 .5cqw 1.6cqw rgba(0, 0, 0, .7));
+.recto[data-r="5"]:not(.manquante) .nom { color: transparent; text-shadow: none; filter: drop-shadow(0 .5cqw 1.6cqw rgba(0, 0, 0, .7));
   background: linear-gradient(100deg, #fff 20%, #aee3ff 36%, #fff 48%, #f0c8ff 60%, #fff 78%) 0 0 / 250% 100%;
   -webkit-background-clip: text; background-clip: text; animation: lueur-texte 3.2s linear infinite; }
-[data-r="5"]:not(.manquante) .code { box-shadow: 0 0 3cqw rgba(255, 255, 255, .85); }
-[data-r="5"]:not(.manquante) .trait { background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0)); box-shadow: 0 0 2cqw rgba(255, 255, 255, .8); }
-[data-r="5"][data-f="arc"]:not(.manquante) .foil { opacity: .85; }
+.recto[data-r="5"]:not(.manquante) .code { box-shadow: 0 0 3cqw rgba(255, 255, 255, .85); }
+.recto[data-r="5"]:not(.manquante) .trait { background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0)); box-shadow: 0 0 2cqw rgba(255, 255, 255, .8); }
+.recto[data-r="5"][data-f="arc"]:not(.manquante) .foil { opacity: .85; }
 
 /* le suspense : avant d'être retournée, la carte secrète tremble et luit */
 #courante.presage { animation: tremble .22s linear infinite; }
