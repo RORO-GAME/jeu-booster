@@ -1,5 +1,5 @@
 [
-  {"id": 1, "nom": "Carte test 01", "rarete": "commune", "tag": "Édition test", "image": "images/001.png"},
+  {"id": 1, "nom": "pastabox bolognaise", "rarete": "commune", "tag": "pastipasta", "image": "images/001.png"},
   {"id": 2, "nom": "Carte test 02", "rarete": "commune", "tag": "Édition test", "image": "images/002.png"},
   {"id": 3, "nom": "Carte test 03", "rarete": "commune", "tag": "Édition test", "image": "images/003.png"},
   {"id": 4, "nom": "Carte test 04", "rarete": "commune", "tag": "Édition test", "image": "images/004.png"},
