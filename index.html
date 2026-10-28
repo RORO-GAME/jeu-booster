@@ -402,6 +402,40 @@ button.carte-fixe { cursor: pointer; }
 .solde { color: var(--doux); font-size: 15px; margin: 4px 0 0; }
 .solde b { color: var(--texte); }
 
+/* ---------- roue, codes, admin ---------- */
+.puce.multi { border-color: rgba(242, 193, 78, .55); }
+.puce.multi b { color: var(--rc4); }
+.roue { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 26px 44px; padding: 26px 22px; margin-top: 18px; }
+.roue-support { position: relative; flex: none; width: clamp(230px, 70vw, 300px); aspect-ratio: 1; margin-top: 10px; }
+.roue-pointe { position: absolute; top: -14px; left: 50%; z-index: 2; width: 0; height: 0; margin-left: -13px;
+  border-left: 13px solid transparent; border-right: 13px solid transparent; border-top: 28px solid #fff; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .7)); }
+#roue { display: block; width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 0 5px rgba(255, 255, 255, .14), 0 22px 40px -18px rgba(0, 0, 0, .9);
+  transition: transform 5.4s cubic-bezier(.1, .72, .12, 1); }
+#roue text { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 800; letter-spacing: -0.01em; }
+.roue-texte { flex: 1 1 260px; max-width: 400px; }
+.roue-texte h3 { margin: 0 0 6px; font-size: 22px; font-weight: 800; letter-spacing: -0.03em; }
+.roue-texte p { margin: 0 0 14px; color: var(--doux); font-size: 14.5px; }
+.roue-texte .roue-resultat { min-height: 3em; margin: 14px 0 6px; color: var(--texte); font-size: 16px; font-weight: 600; }
+.roue-texte .roue-resultat .btn { margin-top: 10px; }
+.code-form { margin-top: 16px; }
+.code-form h3, .admin-grille h3 { margin: 0 0 4px; font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+.code-form p, .admin-grille p { margin: 0 0 12px; color: var(--doux); font-size: 14.5px; }
+.code-ligne { display: flex; flex-wrap: wrap; gap: 10px; }
+.champ { flex: 1 1 180px; min-width: 0; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--trait); background: rgba(255, 255, 255, .06); color: var(--texte); font: inherit; font-size: 16px; }
+.champ:focus { outline: 2px solid #fff; outline-offset: 1px; }
+.msg-court { min-height: 1.6em; margin: 10px 0 0 !important; font-size: 14.5px; }
+.msg-court.ko { color: #ff8d9a !important; }
+.msg-court.ok { color: #8fd9a8 !important; }
+.admin-grille { display: grid; gap: 16px; padding-top: 18px; }
+.admin-form { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); align-items: end; }
+.admin-form label { display: grid; gap: 6px; font-size: 14px; color: var(--doux); }
+.case { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; color: var(--texte); font-size: 15px; }
+.case input { width: 18px; height: 18px; accent-color: #fff; }
+.btn.petit { padding: 6px 12px; border-radius: 10px; font-size: 14px; }
+td.act { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 0; }
+.etat-actif { color: #8fd9a8; } .etat-off { color: var(--doux); }
+
+
 /* ---------- collection ---------- */
 .panneau { border: 1px solid var(--trait); background: var(--panneau); border-radius: 18px; padding: 20px; }
 .coll-tete { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 24px; padding: 22px 0 6px; }
@@ -472,6 +506,7 @@ footer p { margin: 0; }
     <div class="puces">
       <div class="puce compte" id="puce-compte" hidden><b id="st-pseudo"></b></div>
       <div class="puce pieces"><b id="st-pieces">0</b> pièces</div>
+      <div class="puce multi" id="puce-multi" hidden><b id="st-multi"></b></div>
       <div class="puce"><b id="st-dispo">0</b> <span id="st-dispo-lbl">boosters</span></div>
       <div class="puce"><b id="st-ouverts">0</b> <span id="st-ouverts-lbl">ouverts</span></div>
     </div>
@@ -482,6 +517,7 @@ footer p { margin: 0; }
     <button type="button" role="tab" id="t-collection" aria-selected="false" aria-controls="v-collection" disabled>Collection<span class="n" id="t-compte"></span></button>
     <button type="button" role="tab" id="t-boutique" aria-selected="false" aria-controls="v-boutique" disabled>Boutique</button>
     <button type="button" role="tab" id="t-infos" aria-selected="false" aria-controls="v-infos" disabled>Infos</button>
+    <button type="button" role="tab" id="t-admin" aria-selected="false" aria-controls="v-admin" hidden>Admin</button>
   </nav>
 
   <main>
@@ -536,11 +572,65 @@ footer p { margin: 0; }
       <div class="coll-tete">
         <div>
           <h2>Boutique</h2>
-          <p class="solde">Tu as <b id="solde">0</b> pièces. Elles viennent de tes doublons.</p>
+          <p class="solde">Tu as <b id="solde">0</b> pièces. Un booster acheté s'ouvre tout de suite.</p>
         </div>
       </div>
+
+      <div class="panneau roue">
+        <div class="roue-support">
+          <span class="roue-pointe" aria-hidden="true"></span>
+          <svg id="roue" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+        </div>
+        <div class="roue-texte">
+          <h3>Roue de la chance</h3>
+          <p>Un tour par jour, remis à zéro à minuit. Pièces, booster, multiplicateur… ou rien du tout.</p>
+          <button type="button" class="btn" id="roue-btn">Tourner la roue</button>
+          <p class="sous" id="roue-compte" style="margin-top:12px"></p>
+          <div class="roue-resultat" id="roue-resultat" aria-live="polite"></div>
+        </div>
+      </div>
+
       <div class="boutique" id="boutique"></div>
       <p class="message" id="boutique-msg" aria-live="polite"></p>
+
+      <form class="panneau code-form" id="form-code">
+        <h3>Un code ?</h3>
+        <p>Entre un code pour gagner une récompense. Chaque code ne marche qu'une fois par joueur.</p>
+        <div class="code-ligne">
+          <input class="champ" id="code-saisie" placeholder="Ton code" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="40" aria-label="Code">
+          <button type="submit" class="btn" id="code-valider">Valider</button>
+        </div>
+        <p class="msg-court" id="code-msg" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section id="v-admin" role="tabpanel" aria-labelledby="t-admin" hidden>
+      <div class="admin-grille">
+        <div class="panneau">
+          <h3>Ouvrir des boosters librement</h3>
+          <p>Pas besoin d'en avoir : tu en ouvres autant que tu veux.</p>
+          <label class="case"><input type="checkbox" id="admin-test"> Mode test : ne rien enregistrer (ni cartes, ni pièces)</label>
+          <div class="actions" style="justify-content:flex-start;min-height:0;margin:0">
+            <button type="button" class="btn" id="ad-normal">1 booster</button>
+            <button type="button" class="btn ur" id="ad-ur">1 booster ultra rare</button>
+            <button type="button" class="btn second" id="ad-dix">10 boosters</button>
+          </div>
+        </div>
+        <div class="panneau">
+          <h3>Codes de la boutique</h3>
+          <p>Un code donne une récompense, une seule fois par joueur. Écris-le en minuscules, sans espace (lettres, chiffres, - et _).
+            Pour changer un code, enregistre-le à nouveau avec le même nom.</p>
+          <form class="admin-form" id="form-admin-code">
+            <label>Code<input class="champ" id="ac-code" maxlength="40" required autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="bienvenue10"></label>
+            <label>Boosters<input class="champ" id="ac-boosters" type="number" min="0" max="1000" value="1"></label>
+            <label>Boosters ultra rare<input class="champ" id="ac-ur" type="number" min="0" max="1000" value="0"></label>
+            <label>Pièces<input class="champ" id="ac-pieces" type="number" min="0" max="100000" value="0"></label>
+            <button type="submit" class="btn">Enregistrer le code</button>
+          </form>
+          <p class="msg-court" id="ac-msg" aria-live="polite"></p>
+          <div class="table-defile" id="liste-codes"></div>
+        </div>
+      </div>
     </section>
 
     <section id="v-infos" role="tabpanel" aria-labelledby="t-infos" hidden>
@@ -613,6 +703,7 @@ footer p { margin: 0; }
 
 const CLE_SESSION = "boosters-session-v4";   // qui est connecté sur cet appareil
 const CLE_LOCAL = "boosters-comptes-v4";     // comptes du mode sans serveur
+const CLE_CODES = "boosters-codes-v4";       // codes de la boutique du mode sans serveur
 const CLE_CACHE = "boosters-cache-v4-";      // copie de la progression, suivie de l'identifiant du joueur
 const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = (s) => document.querySelector(s);
@@ -643,6 +734,10 @@ let retournee = false;    // la carte en cours est-elle retournée ?
 let occupe = false;       // une transition est en cours
 let garantieDeclenchee = false;
 let gainRestant = 0;      // pièces des cartes pas encore retournées (elles s'ajoutent au compteur au fil des retournements)
+let file = [];            // boosters à ouvrir à la suite (achat, code, roue, admin) : le mode de chacun
+let fileTotal = 0, fileFait = 0;
+let roueEnCours = false, rotRoue = 0, segmentsRoue = [];
+let adminTest = false, dernierTest = false, codesAdmin = {};
 let filtre = -1;          // filtre de rareté dans la collection
 let statut = "toutes";    // filtre d'état dans la collection
 
@@ -704,6 +799,11 @@ function creerLocal() {
     },
     async charger() { const c = comptes()[courant]; return c && c.etat ? JSON.parse(c.etat) : null; },
     async sauver(texte) { const c = comptes(); if (c[courant]) { c[courant].etat = texte; ecrire(CLE_LOCAL, JSON.stringify(c)); } },
+    // codes de la boutique (partagés par les comptes de cet appareil)
+    async lireCode(code) { return (lireJson(CLE_CODES) || {})[code] || null; },
+    async listerCodes() { return lireJson(CLE_CODES) || {}; },
+    async sauverCode(code, donnees) { const c = lireJson(CLE_CODES) || {}; c[code] = donnees; ecrire(CLE_CODES, JSON.stringify(c)); },
+    async supprimerCode(code) { const c = lireJson(CLE_CODES) || {}; delete c[code]; ecrire(CLE_CODES, JSON.stringify(c)); },
     deconnecter() { effacer(CLE_SESSION); },
   };
 }
@@ -711,7 +811,8 @@ function creerLocal() {
 /* Comptes en ligne avec Firebase (gratuit) : on parle directement à leur service, sans bibliothèque */
 function creerFirebase(cfg) {
   const cle = encodeURIComponent(cfg.apiKey);
-  const base = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(cfg.projectId)}/databases/(default)/documents/joueurs`;
+  const racine = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(cfg.projectId)}/databases/(default)/documents`;
+  const base = racine + "/joueurs";
   let jeton = "", expire = 0, refresh = "", uid = "", pseudo = "";
 
   const messages = [
@@ -727,6 +828,7 @@ function creerFirebase(cfg) {
     ["API key", "La clé Firebase est incorrecte (voir firebase-config.js)."],
     ["does not exist", "La base de données Firestore n'est pas créée (voir LISEZMOI.md)."],
     ["PERMISSION_DENIED", "La base de données refuse l'accès : vérifie les règles Firestore (voir LISEZMOI.md)."],
+    ["insufficient permissions", "La base de données refuse l'accès : vérifie les règles Firestore (voir LISEZMOI.md)."],
   ];
   const traduire = (code, statut) => {
     for (const [k, t] of messages) if (String(code).includes(k)) return t;
@@ -805,6 +907,41 @@ function creerFirebase(cfg) {
         headers: { Authorization: "Bearer " + t, "Content-Type": "application/json" },
         body: JSON.stringify({ fields: { etat: { stringValue: texte }, pseudo: { stringValue: pseudo } } }),
       });
+    },
+    /* codes de la boutique : tout le monde peut lire UN code (en connaissant son nom), seul l'admin peut les lister et les changer */
+    async lireCode(code) {
+      const t = await jetonValide();
+      try {
+        const d = await appel(`${racine}/codes/${encodeURIComponent(code)}`, { headers: { Authorization: "Bearer " + t } });
+        return JSON.parse(d.fields.donnees.stringValue);
+      } catch (e) {
+        if (e.statut === 404 && /not found/i.test(e.code)) return null;
+        throw e;
+      }
+    },
+    async listerCodes() {
+      const t = await jetonValide();
+      const codes = {};
+      let page = "";
+      do {
+        const d = await appel(`${racine}/codes?pageSize=300` + (page ? "&pageToken=" + encodeURIComponent(page) : ""), { headers: { Authorization: "Bearer " + t } });
+        for (const doc of d.documents || []) {
+          try { codes[decodeURIComponent(doc.name.split("/").pop())] = JSON.parse(doc.fields.donnees.stringValue); } catch (_) { /* document illisible : on l'ignore */ }
+        }
+        page = d.nextPageToken || "";
+      } while (page);
+      return codes;
+    },
+    async sauverCode(code, donnees) {
+      const t = await jetonValide();
+      await appel(`${racine}/codes/${encodeURIComponent(code)}?updateMask.fieldPaths=donnees`, {
+        method: "PATCH", headers: { Authorization: "Bearer " + t, "Content-Type": "application/json" },
+        body: JSON.stringify({ fields: { donnees: { stringValue: JSON.stringify(donnees) } } }),
+      });
+    },
+    async supprimerCode(code) {
+      const t = await jetonValide();
+      await appel(`${racine}/codes/${encodeURIComponent(code)}`, { method: "DELETE", headers: { Authorization: "Bearer " + t } });
     },
     deconnecter() { effacer(CLE_SESSION); },
   };
@@ -1009,7 +1146,21 @@ function mmss(ms) {
   const t = Math.max(0, Math.ceil(ms / 1000));
   return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0");
 }
-const resteAttente = () => etat.horloge + REGL.intervalle_ms - Date.now();
+const attenteCourante = () => JSON.parse(attentePy(JSON.stringify(etat), Date.now()));
+const resteAttente = () => attenteCourante().reste;
+function dureeTxt(ms) {
+  const t = Math.round(ms / 1000), m = Math.floor(t / 60), sec = t % 60;
+  return m === 0 ? `${sec} s` : sec === 0 ? `${m} min` : `${m} min ${sec} s`;
+}
+function dureeLongue(ms) {
+  const m = Math.max(1, Math.ceil(ms / 60000)), h = Math.floor(m / 60);
+  return h > 0 ? `${h} h ${String(m % 60).padStart(2, "0")} min` : `${m} min`;
+}
+function jourLocal() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+const resteAvantMinuit = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1) - d; };
 
 function majPack() {
   const pret = phase === "pret";
@@ -1026,7 +1177,10 @@ function majBoutons() {
   if (enCours) {
     $("#btn-principal").textContent = !retournee ? "Retourner la carte" : idx === tirage.length - 1 ? "Voir le résumé" : "Carte suivante";
   }
-  if (phase === "fini") $("#btn-autre").textContent = dispo() + etat.achetes_ur > 0 ? "Ouvrir un autre booster" : "Retour aux boosters";
+  if (phase === "fini") {
+    $("#btn-autre").textContent = file.length ? `Booster suivant (${file.length} restant${file.length > 1 ? "s" : ""})`
+      : dispo() + etat.achetes_ur > 0 ? "Ouvrir un autre booster" : "Retour aux boosters";
+  }
   majPack();
 }
 
@@ -1041,7 +1195,7 @@ function majMessage() {
     m.textContent = "";
   } else if (phase === "reveal") {
     const c = tirage[idx];
-    const debut = `Carte ${idx + 1} sur ${tirage.length}. `;
+    const debut = (fileTotal > 1 ? `Booster ${fileFait} sur ${fileTotal}. ` : "") + `Carte ${idx + 1} sur ${tirage.length}. `;
     if (!retournee) m.textContent = debut + "Clique sur la carte pour la retourner.";
     else if (c.nouvelle) m.textContent = debut + "Nouvelle carte !";
     else if (c.nouvelle_finition) m.textContent = debut + "Tu ne l'avais pas dans cette finition !";
@@ -1054,6 +1208,7 @@ function majMessage() {
     else if (tirage.some((c) => c.finition === "brillante")) t += " Une carte brillante !";
     const gain = tirage.reduce((s, c) => s + (c.pieces || 0), 0);
     if (gain > 0) t += ` Tes doublons rapportent ${pluriel(gain, "pièce", "pièces")}.`;
+    if (dernierTest) t += " Mode test : rien n'est enregistré.";
     if (garantieDeclenchee) t += ` La garantie s'est déclenchée : une carte ${REGL.pitie_rarete} ou mieux t'était réservée.`;
     m.textContent = t;
   }
@@ -1063,8 +1218,9 @@ async function ouvrir(mode = "normal") {
   if (phase !== "pret") return;
   phase = "ouverture";
   const pack = $("#pack");
-  pack.classList.toggle("ur", mode === "ur");
-  $("#pack-titre").textContent = mode === "ur" ? "Booster UR" : "Booster";
+  const garanti = mode === "ur" || mode === "libre_ur";
+  pack.classList.toggle("ur", garanti);
+  $("#pack-titre").textContent = garanti ? "Booster UR" : "Booster";
   majPack();
   majMessage();
   let res;
@@ -1077,17 +1233,20 @@ async function ouvrir(mode = "normal") {
     $("#message").textContent = "Le tirage a échoué : " + (e.message || e);
     return;
   }
-  etat = res.etat;
+  const test = mode.startsWith("libre") && adminTest;  // mode test de l'admin : on ne garde rien
+  if (!test || res.erreur) etat = res.etat;
   if (res.erreur) {
+    file = []; fileTotal = 0;
     phase = "pret";
     majStats(); majPack();
     $("#message").textContent = res.erreur;
     return;
   }
+  dernierTest = test;
   tirage = res.cartes;
   garantieDeclenchee = res.pitie;
-  gainRestant = tirage.reduce((s, c) => s + (c.pieces || 0), 0);
-  sauvegarder();
+  gainRestant = test ? 0 : tirage.reduce((s, c) => s + (c.pieces || 0), 0);
+  if (!test) sauvegarder();
   majStats();
 
   pack.classList.add("ouvre");
@@ -1204,24 +1363,20 @@ function majStats() {
   majReserve();
 }
 
-function majReserve() {
-  const max = REGL.stock_max;
-  $("#st-stock").textContent = `${etat.stock} / ${max}`;
-  let note, part;
-  if (etat.stock >= max) {
-    note = "Réserve pleine : ouvre un booster pour relancer l'attente.";
-    part = 1;
-  } else {
-    const reste = resteAttente();
-    note = `Prochain booster gratuit dans ${mmss(reste)}.`;
-    part = 1 - Math.min(Math.max(reste / REGL.intervalle_ms, 0), 1);
-  }
+function majReserve(a) {
+  a = a || attenteCourante();
+  $("#st-stock").textContent = `${etat.stock} / ${REGL.stock_max}`;
+  let note = a.plein ? "Réserve pleine : ouvre un booster pour relancer l'attente." : `Prochain booster gratuit dans ${mmss(a.reste)}.`;
+  $("#jauge").style.width = (a.plein ? 1 : a.part) * 100 + "%";
+  if (a.facteur > 1) note += ` Multiplicateur ×${a.facteur} : un booster toutes les ${dureeTxt(REGL.intervalle_ms / a.facteur)}, encore ${mmss(a.multi_reste)}.`;
   const achetes = [];
-  if (etat.achetes > 0) achetes.push(pluriel(etat.achetes, "booster acheté", "boosters achetés"));
+  if (etat.achetes > 0) achetes.push(pluriel(etat.achetes, "booster acheté ou gagné", "boosters achetés ou gagnés"));
   if (etat.achetes_ur > 0) achetes.push(pluriel(etat.achetes_ur, "booster ultra rare garanti", "boosters ultra rare garantis"));
   if (achetes.length) note += " En plus : " + achetes.join(" et ") + ".";
   $("#st-note").textContent = note;
-  $("#jauge").style.width = part * 100 + "%";
+  const pm = $("#puce-multi");
+  pm.hidden = !(a.facteur > 1);
+  if (!pm.hidden) $("#st-multi").textContent = `×${a.facteur} · ${mmss(a.multi_reste)}`;
 }
 
 /* le temps passe : un booster gratuit de plus toutes les 15 minutes */
@@ -1235,12 +1390,15 @@ function synchroniser() {
   if (!$("#v-boutique").hidden) rendreBoutique();
 }
 function tictac() {
-  if (!compte || !etat) return;
-  if (etat.stock < REGL.stock_max && Date.now() >= etat.horloge + REGL.intervalle_ms) synchroniser();
+  if (!compte || !etat || roueEnCours) return;
+  const a = attenteCourante();
+  const expire = !!etat.multi && Date.now() >= etat.multi.fin;
+  if ((etat.stock < REGL.stock_max && a.pret) || expire) synchroniser();
   else {
-    majReserve();
+    majReserve(a);
     if (phase === "pret" && dispo() <= 0) majMessage();
   }
+  majRoue();
 }
 
 /* ---------- la carte secrète : un vrai moment ---------- */
@@ -1303,6 +1461,31 @@ function rendreBoutique() {
   }));
 }
 
+/* une série de boosters à ouvrir tout de suite, l'un après l'autre */
+function lancerFile(modes) {
+  if (!modes.length || phase === "ouverture" || phase === "reveal") return;
+  file = modes.slice();
+  fileTotal = file.length;
+  fileFait = 0;
+  onglet("boosters");
+  if (phase === "fini") autreBooster();
+  ouvrirDeLaFile();
+}
+function ouvrirDeLaFile() {
+  const mode = file.shift();
+  fileFait++;
+  return ouvrir(mode);
+}
+function ouvrirIsole(mode) {
+  file = []; fileTotal = 0; fileFait = 0;
+  return ouvrir(mode);
+}
+function suite() {
+  autreBooster();
+  if (file.length) ouvrirDeLaFile();
+}
+const modesDe = (g) => [...Array(g.boosters || 0).fill("achete"), ...Array(g.ur || 0).fill("ur")];
+
 function acheter(id) {
   const msg = $("#boutique-msg");
   if (phase === "ouverture" || phase === "reveal") { msg.textContent = "Termine d'abord d'ouvrir ton booster."; return; }
@@ -1312,15 +1495,212 @@ function acheter(id) {
   etat = r.etat;
   if (r.erreur) {
     msg.textContent = r.erreur;
-  } else {
-    const o = REGL.boutique.find((x) => x.id === id);
-    msg.textContent = `Acheté : ${o.nom}.`;
-    sauvegarder();
+    majStats(); majPack(); rendreBoutique();
+    return;
   }
+  const o = REGL.boutique.find((x) => x.id === id);
+  msg.textContent = `Acheté : ${o.nom}.`;
+  sauvegarder();
   majStats();
   majPack();
-  if (phase === "fini") majBoutons();
   rendreBoutique();
+  lancerFile(modesDe(o));   // on va directement ouvrir ce qu'on vient d'acheter
+}
+
+/* ---------- roue de la chance ---------- */
+const COULEURS_ROUE = { p10: "#d9a93a", p25: "#f2c14e", p50: "#ffd978", b1: "#4c9bff", x2: "#a85cff", x3: "#ff5fa8", x5: "#ff4458", rien: "#2a3948" };
+function dessinerRoue() {
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = $("#roue");
+  svg.replaceChildren();
+  const total = REGL.roue.reduce((s, g) => s + g.poids, 0);
+  const pt = (a, r) => [r * Math.sin((a * Math.PI) / 180), -r * Math.cos((a * Math.PI) / 180)];
+  let a0 = 0;
+  segmentsRoue = [];
+  for (const g of REGL.roue) {
+    const a1 = a0 + (g.poids / total) * 360;
+    segmentsRoue.push({ id: g.id, a0, a1 });
+    const [x0, y0] = pt(a0, 100), [x1, y1] = pt(a1, 100);
+    const chemin = document.createElementNS(NS, "path");
+    chemin.setAttribute("d", `M0 0 L${x0.toFixed(2)} ${y0.toFixed(2)} A100 100 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`);
+    chemin.setAttribute("fill", COULEURS_ROUE[g.id] || "#456");
+    chemin.setAttribute("stroke", "#0b1119");
+    chemin.setAttribute("stroke-width", "1.6");
+    const t = document.createElementNS(NS, "text");
+    t.setAttribute("transform", `rotate(${((a0 + a1) / 2 - 90).toFixed(1)})`);
+    t.setAttribute("x", "90");
+    t.setAttribute("text-anchor", "end");
+    t.setAttribute("dominant-baseline", "central");
+    t.setAttribute("font-size", g.poids >= 20 ? "12" : "10");
+    t.setAttribute("fill", g.id === "rien" ? "#8c9db0" : g.id.startsWith("p") ? "#1d1503" : "#ffffff");
+    t.textContent = g.court;
+    svg.append(chemin, t);
+    a0 = a1;
+  }
+  const centre = document.createElementNS(NS, "circle");
+  centre.setAttribute("r", "9");
+  centre.setAttribute("fill", "#0b1119");
+  centre.setAttribute("stroke", "#ffffff");
+  centre.setAttribute("stroke-width", "2");
+  svg.append(centre);
+}
+
+function majRoue() {
+  if (!etat) return;
+  const fait = etat.roue_jour === jourLocal();
+  $("#roue-btn").disabled = fait || roueEnCours;
+  if (!roueEnCours) $("#roue-compte").textContent = fait ? `Ton tour du jour est utilisé. Prochain tour à minuit, dans ${dureeLongue(resteAvantMinuit())}.` : "Ton tour du jour est disponible !";
+}
+
+async function tournerRoue() {
+  if (roueEnCours || etat.roue_jour === jourLocal()) return;
+  let r;
+  try { r = JSON.parse(roueurPy(JSON.stringify(etat), jourLocal(), Date.now())); }
+  catch (e) { console.error(e); $("#roue-resultat").textContent = "La roue a eu un souci."; return; }
+  if (r.erreur) { $("#roue-resultat").textContent = r.erreur; return; }
+  roueEnCours = true;
+  $("#roue-btn").disabled = true;
+  $("#roue-resultat").replaceChildren();
+  $("#roue-compte").textContent = "La roue tourne…";
+  etat = r.etat;
+  sauvegarder();   // le tour est enregistré tout de suite : recharger la page ne permet pas de retirer
+  const g = r.gain;
+  const seg = segmentsRoue.find((x) => x.id === g.id);
+  const angle = (seg.a0 + seg.a1) / 2 + (Math.random() * 2 - 1) * (seg.a1 - seg.a0) * 0.35;
+  rotRoue = Math.ceil(rotRoue / 360) * 360 + 360 * 6 + (360 - angle);
+  $("#roue").style.transform = `rotate(${rotRoue}deg)`;
+  await attendre(reduit ? 0 : 5600);
+  roueEnCours = false;
+
+  majStats(); rendreBoutique(); majRoue();
+  const zone = $("#roue-resultat");
+  let texte;
+  if (g.id === "rien") texte = "Rien cette fois… Reviens demain !";
+  else if (g.pieces) texte = `Tu gagnes ${g.pieces} pièces !`;
+  else if (g.boosters) texte = "Tu gagnes un booster !";
+  else texte = `Multiplicateur ×${g.multi} ! Un booster gratuit toutes les ${dureeTxt(REGL.intervalle_ms / g.multi)} pendant ${Math.round(REGL.multi_duree_ms / 60000)} minutes.`;
+  zone.append(texte);
+  if (g.boosters) {
+    zone.append(el("br"));
+    const b = el("button", "btn", "Ouvrir mon booster");
+    b.type = "button";
+    b.addEventListener("click", () => lancerFile(["achete"]));
+    zone.append(b);
+  }
+}
+
+/* ---------- codes ---------- */
+const normaliserCode = (c) => c.trim().normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, "");
+const codeValide = (c) => /^[a-z0-9_-]{2,40}$/.test(c);
+function messageCourt(zone, texte, genre) {
+  zone.textContent = texte;
+  zone.className = "msg-court" + (genre ? " " + genre : "");
+}
+
+async function validerCode(e) {
+  e.preventDefault();
+  const msg = $("#code-msg");
+  if (phase === "ouverture" || phase === "reveal") return messageCourt(msg, "Termine d'abord d'ouvrir ton booster.", "ko");
+  const code = normaliserCode($("#code-saisie").value);
+  if (!codeValide(code)) return messageCourt(msg, "Ce code n'est pas valide.", "ko");
+  if (etat.codes_utilises.includes(code)) return messageCourt(msg, "Tu as déjà utilisé ce code.", "ko");
+  const bouton = $("#code-valider");
+  bouton.disabled = true;
+  messageCourt(msg, "Vérification…");
+  try {
+    const rec = await backend.lireCode(code);
+    if (!rec || !rec.actif) return messageCourt(msg, "Ce code n'existe pas ou n'est plus valable.", "ko");
+    const r = JSON.parse(codePy(JSON.stringify(etat), code, JSON.stringify(rec), Date.now()));
+    etat = r.etat;
+    if (r.erreur) return messageCourt(msg, r.erreur, "ko");
+    sauvegarder();
+    const g = r.gain, parts = [];
+    if (g.boosters) parts.push(pluriel(g.boosters, "booster", "boosters"));
+    if (g.ur) parts.push(pluriel(g.ur, "booster ultra rare", "boosters ultra rare"));
+    if (g.pieces) parts.push(pluriel(g.pieces, "pièce", "pièces"));
+    messageCourt(msg, "Code accepté : tu gagnes " + parts.join(", ") + " !", "ok");
+    $("#code-saisie").value = "";
+    majStats(); majPack(); rendreBoutique();
+    lancerFile(modesDe(g));
+  } catch (err) {
+    messageCourt(msg, err.message || String(err), "ko");
+  } finally {
+    bouton.disabled = false;
+  }
+}
+
+/* ---------- compte admin : codes et ouverture libre ---------- */
+const estAdmin = () => !!compte && !!REGL && compte.pseudo === REGL.admin;
+
+function resumeCode(d) {
+  const p = [];
+  if (d.boosters) p.push(pluriel(d.boosters, "booster", "boosters"));
+  if (d.ur) p.push(pluriel(d.ur, "booster ultra rare", "boosters ultra rare"));
+  if (d.pieces) p.push(pluriel(d.pieces, "pièce", "pièces"));
+  return p.join(", ") || "rien";
+}
+
+async function rendreAdmin() {
+  const zone = $("#liste-codes");
+  zone.textContent = "Chargement des codes…";
+  try { codesAdmin = await backend.listerCodes(); } catch (e) { zone.textContent = e.message || String(e); return; }
+  const noms = Object.keys(codesAdmin).sort();
+  if (!noms.length) { zone.textContent = "Aucun code pour l'instant."; return; }
+  const t = el("table");
+  const thead = el("thead"), hd = el("tr");
+  ["Code", "Récompense", "État", ""].forEach((h) => hd.append(el("th", "", h)));
+  thead.append(hd);
+  const corps = el("tbody");
+  for (const nom of noms) {
+    const d = codesAdmin[nom];
+    const tr = el("tr");
+    tr.append(el("td", "", nom), el("td", "", resumeCode(d)), el("td", d.actif ? "etat-actif" : "etat-off", d.actif ? "Actif" : "Désactivé"));
+    const act = el("td", "act");
+    const bouton = (libelle, action) => { const b = el("button", "btn second petit", libelle); b.type = "button"; b.addEventListener("click", action); act.append(b); };
+    bouton("Modifier", () => {
+      $("#ac-code").value = nom;
+      $("#ac-boosters").value = d.boosters || 0;
+      $("#ac-ur").value = d.ur || 0;
+      $("#ac-pieces").value = d.pieces || 0;
+      $("#ac-code").focus();
+    });
+    bouton(d.actif ? "Désactiver" : "Activer", async () => {
+      try { await backend.sauverCode(nom, { ...d, actif: !d.actif }); } catch (e) { messageCourt($("#ac-msg"), e.message || String(e), "ko"); }
+      rendreAdmin();
+    });
+    bouton("Supprimer", async () => {
+      if (!confirm(`Supprimer le code « ${nom} » ?`)) return;
+      try { await backend.supprimerCode(nom); } catch (e) { messageCourt($("#ac-msg"), e.message || String(e), "ko"); }
+      rendreAdmin();
+    });
+    tr.append(act);
+    corps.append(tr);
+  }
+  t.append(thead, corps);
+  zone.replaceChildren(t);
+}
+
+async function enregistrerCode(e) {
+  e.preventDefault();
+  const msg = $("#ac-msg");
+  const code = normaliserCode($("#ac-code").value);
+  if (!codeValide(code)) return messageCourt(msg, "Le code doit faire 2 à 40 caractères : lettres, chiffres, - et _.", "ko");
+  const n = (id) => Math.max(0, Math.min(100000, Math.floor(Number($(id).value) || 0)));
+  const donnees = { boosters: n("#ac-boosters"), ur: n("#ac-ur"), pieces: n("#ac-pieces"), actif: true };
+  if (!donnees.boosters && !donnees.ur && !donnees.pieces) return messageCourt(msg, "Ce code ne donnerait rien.", "ko");
+  if (codesAdmin[code]) donnees.actif = codesAdmin[code].actif;   // modifier un code ne change pas son état
+  try {
+    await backend.sauverCode(code, donnees);
+    messageCourt(msg, `Code « ${code} » enregistré : ${resumeCode(donnees)}.`, "ok");
+    $("#form-admin-code").reset();
+    $("#ac-boosters").value = 1;
+  } catch (err) { messageCourt(msg, err.message || String(err), "ko"); return; }
+  rendreAdmin();
+}
+
+function adminOuvrir(modes) {
+  adminTest = $("#admin-test").checked;
+  lancerFile(modes);
 }
 
 /* ---------- collection ---------- */
@@ -1533,6 +1913,9 @@ function rendreInfos() {
     bloc("Finitions", `Chaque carte tirée peut être brillante (${uneSur(REGL.chance_brillante)}) ou arc-en-ciel (${uneSur(REGL.chance_arc)}), quelle que soit sa rareté. ` +
       "La brillante a un reflet blanc qui balaie la carte. L'arc-en-ciel a un cadre et des reflets multicolores, d'autant plus marqués que la carte est rare."),
   );
+  const multis = REGL.roue.filter((g) => g.multi).map((g) => `×${g.multi} : un booster toutes les ${dureeTxt(REGL.intervalle_ms / g.multi)}`);
+  infos.append(bloc("Roue de la chance", `Un tour par jour, remis à zéro à minuit. Les multiplicateurs accélèrent tes boosters gratuits pendant ${Math.round(REGL.multi_duree_ms / 60000)} minutes (${multis.join(" ; ")}).`,
+    tableau(["Récompense", "Chance"], REGL.roue.map((g) => ({ r: "", cellules: [g.texte, pourcent(g.poids / 100)] })))));
   if (REGL.pitie_apres) {
     infos.append(bloc("Garantie", `Si tu n'as pas eu de carte ${REGL.pitie_rarete} ou mieux pendant ${REGL.pitie_apres} boosters, le suivant en contient une.`));
   }
@@ -1540,12 +1923,13 @@ function rendreInfos() {
 
 /* ---------- onglets ---------- */
 function onglet(nom) {
-  for (const n of ["boosters", "collection", "boutique", "infos"]) {
+  for (const n of ["boosters", "collection", "boutique", "infos", "admin"]) {
     $("#t-" + n).setAttribute("aria-selected", String(n === nom));
     $("#v-" + n).hidden = n !== nom;
   }
   if (nom === "collection") majCollection();
-  if (nom === "boutique") { $("#boutique-msg").textContent = ""; rendreBoutique(); }
+  if (nom === "boutique") { $("#boutique-msg").textContent = ""; rendreBoutique(); majRoue(); }
+  if (nom === "admin" && estAdmin()) rendreAdmin();
 }
 
 /* ---------- démarrage ---------- */
@@ -1555,7 +1939,7 @@ async function texte(url) {
   return r.text();
 }
 
-let synchroPy = null, acheterPy = null, nouvelEtatPy = null;
+let synchroPy = null, acheterPy = null, nouvelEtatPy = null, attentePy = null, roueurPy = null, codePy = null;
 let moteurPret = null;
 let modeConnexion = "connecter";
 let minuteurHorloge = null;
@@ -1571,6 +1955,9 @@ async function chargerMoteur() {
   synchroPy = g("synchroniser_web");
   acheterPy = g("acheter_web");
   nouvelEtatPy = g("nouvel_etat_web");
+  attentePy = g("attente_web");
+  roueurPy = g("tourner_roue_web");
+  codePy = g("utiliser_code_web");
   REGL = JSON.parse(g("reglages_web")());
 
   $("#pack-nb").textContent = pluriel(REGL.taille_booster, "carte", "cartes");
@@ -1578,6 +1965,7 @@ async function chargerMoteur() {
   const points = $("#pack-points");
   REGL.ordre.forEach((_, r) => { const p = el("span"); p.dataset.r = r; points.append(p); });
   rendreInfos();
+  dessinerRoue();
 }
 
 function erreurDemarrage(e) {
@@ -1638,6 +2026,9 @@ async function entrer(session) {
   majCollection();
   rendreBoutique();
   for (const n of ["collection", "boutique", "infos"]) $("#t-" + n).disabled = false;
+  $("#t-admin").hidden = !estAdmin();
+  $("#t-admin").disabled = false;
+  majRoue();
   autreBooster();
   $("#ecran-connexion").hidden = true;
   clearInterval(minuteurHorloge);
@@ -1708,11 +2099,18 @@ $("#form-connexion").addEventListener("submit", async (e) => {
   }
 });
 
-$("#pack").addEventListener("click", () => ouvrir("normal"));
-$("#btn-ur").addEventListener("click", () => ouvrir("ur"));
+$("#pack").addEventListener("click", () => ouvrirIsole("normal"));
+$("#btn-ur").addEventListener("click", () => ouvrirIsole("ur"));
 $("#btn-principal").addEventListener("click", avancer);
 $("#btn-passer").addEventListener("click", passer);
-$("#btn-autre").addEventListener("click", autreBooster);
+$("#btn-autre").addEventListener("click", suite);
+$("#roue-btn").addEventListener("click", tournerRoue);
+$("#form-code").addEventListener("submit", validerCode);
+$("#form-admin-code").addEventListener("submit", enregistrerCode);
+$("#t-admin").addEventListener("click", () => onglet("admin"));
+$("#ad-normal").addEventListener("click", () => adminOuvrir(["libre"]));
+$("#ad-ur").addEventListener("click", () => adminOuvrir(["libre_ur"]));
+$("#ad-dix").addEventListener("click", () => adminOuvrir(Array(10).fill("libre")));
 $("#t-boosters").addEventListener("click", () => onglet("boosters"));
 $("#t-collection").addEventListener("click", () => onglet("collection"));
 $("#t-boutique").addEventListener("click", () => onglet("boutique"));
