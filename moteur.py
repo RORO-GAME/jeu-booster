@@ -60,6 +60,18 @@ VALEUR_DOUBLON = {
 }
 BONUS_FINITION = {"normale": 1, "brillante": 1.5, "arc-en-ciel": 2}
 
+# Classement : chaque carte obtenue (doublons compris) rapporte des points, plus ou moins selon sa rareté,
+# avec le même bonus de finition que les pièces. Ces points ne sont jamais affichés carte par carte :
+# le site ne montre que le total (le "score") dans le classement.
+POINTS = {
+    "commune": 1,
+    "rare": 3,
+    "super rare": 10,
+    "ultra rare": 30,
+    "légendaire": 100,
+    "secrète": 400,
+}
+
 # Boosters gratuits : un nouveau booster toutes les 15 minutes, 10 au maximum en réserve.
 INTERVALLE_SECONDES = 15 * 60
 STOCK_MAX = 10
@@ -110,10 +122,13 @@ def etat_initial(maintenant=0):
     # multi      : multiplicateur en cours {"facteur": 2, "fin": instant en ms}, ou None
     # roue_jour  : le jour (texte) où la roue a été tournée pour la dernière fois
     # codes_utilises : les codes déjà utilisés
+    # stat_cartes, stat_points : cartes tirées en boosters normaux et leurs points (sert à mesurer la "chance")
+    # vitrine    : jusqu'à 3 cartes montrées sur le profil : [{"id": 12, "finition": "brillante"}, ...]
     return {
         "collection": {}, "finitions": {}, "monnaie": 0, "boosters_ouverts": 0, "sans_rare": 0,
         "stock": BOOSTERS_DEPART, "horloge": int(maintenant), "progres": 0.0, "achetes": 0, "achetes_ur": 0,
         "multi": None, "roue_jour": "", "codes_utilises": [],
+        "stat_cartes": 0, "stat_points": 0, "vitrine": [],
     }
 
 
@@ -292,6 +307,10 @@ def valeur_doublon(rarete, finition):
     return int(VALEUR_DOUBLON[rarete] * BONUS_FINITION[finition] + 0.5)
 
 
+def points_carte(rarete, finition):
+    return POINTS[rarete] * BONUS_FINITION[finition]
+
+
 def tirer_finition():
     x = random.random()
     if x < CHANCE_ARC_EN_CIEL:
@@ -358,6 +377,9 @@ def tirer_booster(cartes, etat, mode="normal"):
     else:
         etat["sans_rare"] += 1
     etat["boosters_ouverts"] = etat.get("boosters_ouverts", 0) + 1
+    if mode in ("normal", "achete"):  # les boosters garantis ou de test ne comptent pas pour la "chance"
+        etat["stat_cartes"] = etat.get("stat_cartes", 0) + len(resultat)
+        etat["stat_points"] = etat.get("stat_points", 0) + sum(points_carte(c["rarete"], c["finition"]) for c in resultat)
     for c in resultat:
         cle = str(c["id"])
         etat["collection"][cle] = etat["collection"].get(cle, 0) + 1
@@ -438,3 +460,47 @@ def utiliser_code_web(etat_json, code, recompense_json, maintenant):
     etat = json.loads(etat_json)
     erreur, gain = utiliser_code(etat, code, json.loads(recompense_json), maintenant)
     return json.dumps({"erreur": erreur, "etat": etat, "gain": gain}, ensure_ascii=False)
+
+
+def calculer_profil(etat, cartes):
+    """Les chiffres du profil d'un joueur (ceux du classement). Le score est recalculé à partir de la collection."""
+    rarete_de = {c["id"]: c["rarete"] for c in cartes}
+    score, possedees, brillantes, arcs = 0.0, 0, 0, 0
+    par_rarete = {r: 0 for r in ORDRE}
+    for cle, n in etat.get("collection", {}).items():
+        r = rarete_de.get(int(cle))
+        if r is None or n <= 0:
+            continue
+        f = etat.get("finitions", {}).get(cle, {})
+        b, a = f.get("brillante", 0), f.get("arc-en-ciel", 0)
+        score += POINTS[r] * (max(n - b - a, 0) + b * BONUS_FINITION["brillante"] + a * BONUS_FINITION["arc-en-ciel"])
+        possedees += 1
+        par_rarete[r] += 1
+        brillantes += 1 if b > 0 else 0
+        arcs += 1 if a > 0 else 0
+
+    # "chance" : les points gagnés par carte tirée, comparés à ce qu'on gagne en moyenne (100 % = dans la moyenne)
+    poids = {r: RARETES[r] for r in ORDRE if r in rarete_de.values()}
+    total = sum(poids.values()) or 1
+    moyenne = sum(poids[r] / total * POINTS[r] for r in poids)
+    moyenne *= 1 + CHANCE_BRILLANTE * (BONUS_FINITION["brillante"] - 1) + CHANCE_ARC_EN_CIEL * (BONUS_FINITION["arc-en-ciel"] - 1)
+    tirees = etat.get("stat_cartes", 0)
+    chance = round(100 * etat.get("stat_points", 0) / (tirees * moyenne)) if tirees >= 15 and moyenne else None
+
+    # la vitrine ne garde que des cartes (et finitions) que le joueur possède vraiment
+    vitrine = []
+    for v in etat.get("vitrine", [])[:3]:
+        cle = str(v.get("id"))
+        f = etat.get("finitions", {}).get(cle, {})
+        fin = v.get("finition", "normale")
+        if etat.get("collection", {}).get(cle, 0) > 0 and (fin == "normale" or f.get(fin, 0) > 0):
+            vitrine.append({"id": v["id"], "finition": fin})
+    return {
+        "score": int(round(score)), "possedees": possedees, "total": len(cartes),
+        "boosters": etat.get("boosters_ouverts", 0), "brillantes": brillantes, "arcs": arcs,
+        "par_rarete": [par_rarete[r] for r in ORDRE], "chance": chance, "vitrine": vitrine,
+    }
+
+
+def profil_web(etat_json, cartes_json):
+    return json.dumps(calculer_profil(json.loads(etat_json), json.loads(cartes_json)), ensure_ascii=False)

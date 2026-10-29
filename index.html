@@ -310,6 +310,19 @@ button.carte-fixe { cursor: pointer; }
 .recto[data-r="5"]:not(.manquante) .nom { color: transparent; text-shadow: none; filter: drop-shadow(0 .5cqw 1.6cqw rgba(0, 0, 0, .7));
   background: linear-gradient(100deg, #fff 20%, #aee3ff 36%, #fff 48%, #f0c8ff 60%, #fff 78%) 0 0 / 250% 100%;
   -webkit-background-clip: text; background-clip: text; animation: lueur-texte 3.2s linear infinite; }
+/* les noms gagnent en éclat avec la rareté (la commune reste simple, la secrète a son propre style) */
+@keyframes nom-pulse { 0%, 100% { filter: drop-shadow(0 0 .8cqw var(--halo)) drop-shadow(0 .4cqw .8cqw rgba(0, 0, 0, .6)); } 50% { filter: drop-shadow(0 0 2.4cqw var(--halo)) drop-shadow(0 .4cqw .8cqw rgba(0, 0, 0, .6)); } }
+.recto[data-r="1"]:not(.manquante) .nom { color: #e6f1ff; letter-spacing: .02em; text-shadow: 0 0 2.4cqw rgba(110, 170, 255, .9), 0 .4cqw .8cqw rgba(0, 0, 0, .6); }
+.recto[data-r="2"]:not(.manquante) .nom, .recto[data-r="3"]:not(.manquante) .nom, .recto[data-r="4"]:not(.manquante) .nom {
+  color: transparent; text-shadow: none; letter-spacing: .03em; background-size: 260% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  animation: lueur-texte var(--vit) linear infinite, nom-pulse var(--puls) ease-in-out infinite; }
+.recto[data-r="2"]:not(.manquante) .nom { --halo: rgba(222, 110, 255, .85); --vit: 6s; --puls: 4s;
+  background-image: linear-gradient(100deg, #ffd8f6 0%, #ff8de1 22%, #c9a2ff 45%, #ffd8f6 62%, #ff8de1 82%, #ffd8f6 100%); }
+.recto[data-r="3"]:not(.manquante) .nom { --halo: rgba(255, 70, 70, .95); --vit: 3.6s; --puls: 2.6s; -webkit-text-stroke: .15cqw rgba(90, 0, 10, .55);
+  background-image: linear-gradient(100deg, #fff1c9 0%, #ffb15c 18%, #ff4b4b 38%, #fff1c9 55%, #ff7a3d 75%, #ff4b4b 90%, #fff1c9 100%); }
+.recto[data-r="4"]:not(.manquante) .nom { --halo: rgba(255, 205, 80, 1); --vit: 2.8s; --puls: 2s; -webkit-text-stroke: .2cqw rgba(100, 55, 0, .6); letter-spacing: .04em;
+  background-image: linear-gradient(100deg, #fff6c4 0%, #ffd34e 16%, #c98a14 32%, #fff6c4 48%, #ffe27a 66%, #d9971c 82%, #fff6c4 100%); }
 .recto[data-r="5"]:not(.manquante) .code { box-shadow: 0 0 3cqw rgba(255, 255, 255, .85); }
 .recto[data-r="5"]:not(.manquante) .trait { background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0)); box-shadow: 0 0 2cqw rgba(255, 255, 255, .8); }
 .recto[data-r="5"][data-f="arc"]:not(.manquante) .foil { opacity: .85; }
@@ -373,6 +386,29 @@ button.carte-fixe { cursor: pointer; }
 .connexion .aide { margin: 0; font-size: 13px; color: var(--doux); }
 .erreur { margin: 0; min-height: 1.4em; font-size: 14px; color: #ff8d9a; }
 .btn:disabled { opacity: .5; cursor: default; }
+/* classement et profils */
+.classement { max-width: 640px; margin: 0 auto; }
+.rang-liste { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+.rang-ligne { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; border: 1px solid var(--trait); border-radius: 14px; background: var(--panneau); color: var(--texte); font: inherit; text-align: left; cursor: pointer; }
+.rang-ligne:hover { border-color: rgba(255, 255, 255, .35); }
+.rang-ligne.moi { border-color: rgba(242, 193, 78, .6); }
+.rang-num { flex: none; width: 2.2em; font-weight: 800; font-size: 18px; text-align: center; font-variant-numeric: tabular-nums; color: var(--doux); }
+.rang-ligne:nth-child(1) .rang-num { color: #ffd34e; } .rang-ligne:nth-child(2) .rang-num { color: #d5dde6; } .rang-ligne:nth-child(3) .rang-num { color: #d9915c; }
+.rang-nom { flex: 1; min-width: 0; font-weight: 700; text-transform: capitalize; overflow: hidden; text-overflow: ellipsis; }
+.rang-det { color: var(--doux); font-size: 13px; }
+.rang-score { font-weight: 800; font-variant-numeric: tabular-nums; }
+.profil-tete { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 6px 0 14px; }
+.profil-tete h2 { margin: 0; text-transform: capitalize; }
+.profil-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 0 0 18px; }
+.profil-stats div { padding: 12px 14px; border: 1px solid var(--trait); border-radius: 12px; background: var(--panneau); }
+.profil-stats b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+.profil-stats span { font-size: 13px; color: var(--doux); }
+.vitrine { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 2vw, 18px); max-width: 640px; margin: 10px 0 8px; }
+.vitrine .vide-case { aspect-ratio: 5 / 7; border: 2px dashed var(--trait); border-radius: 14px; display: grid; place-items: center; color: var(--doux); font-size: 13px; text-align: center; padding: 6px; }
+.vit-choix { margin-top: 14px; }
+.vit-choix .grille-choix { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; margin: 12px 0; }
+.vit-choix button.carte-fixe { padding: 0; border: 3px solid transparent; border-radius: 12px; background: none; cursor: pointer; }
+.vit-choix button.carte-fixe[aria-pressed="true"] { border-color: #fff; box-shadow: 0 0 0 3px rgba(255, 255, 255, .25); }
 
 .puce.compte b { text-transform: capitalize; }
 .pied-actions { display: flex; flex-wrap: wrap; gap: 8px 22px; }
@@ -492,6 +528,7 @@ footer p { margin: 0; }
   .grille { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 20px 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .recto:not(.manquante) .nom { animation: none !important; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 </style>
@@ -515,6 +552,7 @@ footer p { margin: 0; }
   <nav class="onglets" role="tablist" aria-label="Sections">
     <button type="button" role="tab" id="t-boosters" aria-selected="true" aria-controls="v-boosters">Booster</button>
     <button type="button" role="tab" id="t-collection" aria-selected="false" aria-controls="v-collection" disabled>Collection<span class="n" id="t-compte"></span></button>
+    <button type="button" role="tab" id="t-classement" aria-selected="false" aria-controls="v-classement" disabled>Classement</button>
     <button type="button" role="tab" id="t-boutique" aria-selected="false" aria-controls="v-boutique" disabled>Boutique</button>
     <button type="button" role="tab" id="t-infos" aria-selected="false" aria-controls="v-infos" disabled>Infos</button>
     <button type="button" role="tab" id="t-admin" aria-selected="false" aria-controls="v-admin" hidden>Admin</button>
@@ -602,6 +640,17 @@ footer p { margin: 0; }
         </div>
         <p class="msg-court" id="code-msg" aria-live="polite"></p>
       </form>
+    </section>
+
+    <section id="v-classement" role="tabpanel" aria-labelledby="t-classement" hidden>
+      <div class="classement">
+        <div id="cl-liste-zone">
+          <h2 style="margin:0">Classement</h2>
+          <p class="sous" id="cl-note">Clique sur un joueur pour voir son profil et sa vitrine.</p>
+          <ol class="rang-liste" id="cl-liste"></ol>
+        </div>
+        <div id="cl-profil" hidden></div>
+      </div>
     </section>
 
     <section id="v-admin" role="tabpanel" aria-labelledby="t-admin" hidden>
@@ -704,6 +753,7 @@ footer p { margin: 0; }
 const CLE_SESSION = "boosters-session-v4";   // qui est connecté sur cet appareil
 const CLE_LOCAL = "boosters-comptes-v4";     // comptes du mode sans serveur
 const CLE_CODES = "boosters-codes-v4";       // codes de la boutique du mode sans serveur
+const CLE_CLASSEMENT = "boosters-classement-v4";  // profils publics du mode sans serveur
 const CLE_CACHE = "boosters-cache-v4-";      // copie de la progression, suivie de l'identifiant du joueur
 const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = (s) => document.querySelector(s);
@@ -804,6 +854,9 @@ function creerLocal() {
     async listerCodes() { return lireJson(CLE_CODES) || {}; },
     async sauverCode(code, donnees) { const c = lireJson(CLE_CODES) || {}; c[code] = donnees; ecrire(CLE_CODES, JSON.stringify(c)); },
     async supprimerCode(code) { const c = lireJson(CLE_CODES) || {}; delete c[code]; ecrire(CLE_CODES, JSON.stringify(c)); },
+    // classement : les profils publics des comptes de cet appareil
+    async publier(texte) { const c = lireJson(CLE_CLASSEMENT) || {}; c[courant] = JSON.parse(texte); ecrire(CLE_CLASSEMENT, JSON.stringify(c)); },
+    async listerClassement() { const c = lireJson(CLE_CLASSEMENT) || {}; return Object.keys(c).map((k) => ({ ...c[k], uid: "local-" + k })); },
     deconnecter() { effacer(CLE_SESSION); },
   };
 }
@@ -943,6 +996,28 @@ function creerFirebase(cfg) {
       const t = await jetonValide();
       await appel(`${racine}/codes/${encodeURIComponent(code)}`, { method: "DELETE", headers: { Authorization: "Bearer " + t } });
     },
+    /* classement : un document public par joueur (lisible par tous les comptes, modifiable seulement par son propriétaire) */
+    async publier(texte, keepalive) {
+      const t = await jetonValide();
+      await appel(`${racine}/classement/${uid}?updateMask.fieldPaths=profil`, {
+        method: "PATCH", keepalive: !!keepalive,
+        headers: { Authorization: "Bearer " + t, "Content-Type": "application/json" },
+        body: JSON.stringify({ fields: { profil: { stringValue: texte } } }),
+      });
+    },
+    async listerClassement() {
+      const t = await jetonValide();
+      const liste = [];
+      let page = "";
+      do {
+        const d = await appel(`${racine}/classement?pageSize=300` + (page ? "&pageToken=" + encodeURIComponent(page) : ""), { headers: { Authorization: "Bearer " + t } });
+        for (const doc of d.documents || []) {
+          try { liste.push({ ...JSON.parse(doc.fields.profil.stringValue), uid: doc.name.split("/").pop() }); } catch (_) { /* profil illisible : on l'ignore */ }
+        }
+        page = d.nextPageToken || "";
+      } while (page);
+      return liste;
+    },
     deconnecter() { effacer(CLE_SESSION); },
   };
 }
@@ -973,6 +1048,7 @@ async function envoyer(keepalive) {
   aEnvoyer = false;
   let ok = true;
   try { await backend.sauver(JSON.stringify(etat), keepalive); } catch (e) { ok = false; aEnvoyer = true; console.warn(e); }
+  if (ok) { try { await publierProfil(keepalive); } catch (e) { console.warn("classement :", e); } }
   envoiEnCours = false;
   if (!ok) {
     afficherSauvegarde("Hors ligne : ta progression est gardée sur cet appareil et sera envoyée dès que possible.");
@@ -982,6 +1058,15 @@ async function envoyer(keepalive) {
   } else {
     afficherSauvegarde(backend.nom === "local" ? "Enregistré dans ce navigateur" : "Sauvegardé en ligne", true);
   }
+}
+
+/* le profil public : pseudo, score, stats et vitrine (jamais les points de chaque carte) */
+function monProfil() {
+  return { pseudo: compte.pseudo, ...JSON.parse(profilPy(JSON.stringify(etat), CARTES_TXT)) };
+}
+async function publierProfil(keepalive) {
+  if (!profilPy || estAdmin()) return;  // le compte admin ne joue pas dans le classement
+  await backend.publier(JSON.stringify(monProfil()), keepalive);
 }
 
 /* ---------- dessin d'une carte ---------- */
@@ -1921,13 +2006,161 @@ function rendreInfos() {
   }
 }
 
+/* ---------- classement et profils ---------- */
+let profils = [];
+let profilOuvert = null;
+
+async function rendreClassement() {
+  $("#cl-profil").hidden = true;
+  $("#cl-liste-zone").hidden = false;
+  profilOuvert = null;
+  const liste = $("#cl-liste");
+  liste.replaceChildren(el("li", "sous", "Chargement…"));
+  try {
+    if (aEnvoyer) await envoyer(false);
+    profils = await backend.listerClassement();
+  } catch (e) {
+    liste.replaceChildren(el("li", "sous", "Impossible de charger le classement : " + (e.message || e)));
+    return;
+  }
+  // mon profil est toujours à jour, même si l'envoi n'est pas encore passé
+  if (!estAdmin()) {
+    const moi = monProfil();
+    profils = profils.filter((p) => p.uid !== compte.uid);
+    profils.push({ ...moi, uid: compte.uid });
+  }
+  profils = profils.filter((p) => p.pseudo !== REGL.admin);
+  profils.sort((a, b) => b.score - a.score || (b.possedees || 0) - (a.possedees || 0) || String(a.pseudo).localeCompare(b.pseudo));
+  $("#cl-note").textContent = backend.nom === "local"
+    ? "Mode sans serveur : seuls les comptes de cet appareil sont classés. Clique sur un joueur pour voir son profil."
+    : "Clique sur un joueur pour voir son profil et sa vitrine.";
+  liste.replaceChildren();
+  if (!profils.length) liste.append(el("li", "sous", "Personne dans le classement pour l'instant."));
+  profils.forEach((p, i) => {
+    const li = el("li");
+    const b = el("button", "rang-ligne" + (p.uid === compte.uid ? " moi" : ""));
+    b.type = "button";
+    b.append(el("span", "rang-num", String(i + 1)), el("span", "rang-nom", p.pseudo),
+      el("span", "rang-det", `${p.possedees}/${p.total} cartes`), el("span", "rang-score", p.score.toLocaleString("fr-FR")));
+    b.addEventListener("click", () => ouvrirProfil(p.uid));
+    li.append(b);
+    liste.append(li);
+  });
+}
+
+function cartesVitrine(zone, vitrine) {
+  zone.replaceChildren();
+  for (let i = 0; i < 3; i++) {
+    const v = vitrine[i];
+    const c = v && CARTES.find((x) => x.id === v.id);
+    if (!c) { zone.append(el("div", "vide-case", "Case libre")); continue; }
+    const cont = el("div", "carte-fixe");
+    cont.dataset.r = rang(c);
+    const tilt = el("div", "tilt");
+    tilt.append(faceCarte(c, { finition: FINITIONS.includes(v.finition) ? v.finition : "normale" }));
+    cont.append(tilt);
+    activerInclinaison(cont);
+    zone.append(cont);
+  }
+}
+
+function ouvrirProfil(uid) {
+  const p = profils.find((x) => x.uid === uid);
+  if (!p) return;
+  profilOuvert = uid;
+  const moi = uid === compte.uid;
+  const zone = $("#cl-profil");
+  $("#cl-liste-zone").hidden = true;
+  zone.hidden = false;
+  zone.replaceChildren();
+
+  const retour = el("button", "btn second", "‹ Classement");
+  retour.type = "button";
+  retour.addEventListener("click", rendreClassement);
+  const place = profils.indexOf(p) + 1;
+  const tete = el("div", "profil-tete");
+  tete.append(retour, el("h2", "", p.pseudo + (moi ? " (toi)" : "")), el("span", "sous", `${place}${place === 1 ? "er" : "e"} sur ${profils.length}`));
+
+  const stats = el("div", "profil-stats");
+  const stat = (v, l) => { const d = el("div"); d.append(el("b", "", v), el("span", "", l)); stats.append(d); };
+  stat(p.score.toLocaleString("fr-FR"), "Score");
+  stat(`${p.possedees}/${p.total}`, "Cartes différentes");
+  stat(p.chance == null ? "—" : p.chance + " %", p.chance == null ? "Chance (pas assez de boosters)" : "Chance aux boosters (100 % = moyenne)");
+  stat(String(p.boosters), "Boosters ouverts");
+  stat(String(p.brillantes), "Cartes brillantes");
+  stat(String(p.arcs), "Cartes arc-en-ciel");
+  const detail = el("p", "sous", REGL.ordre.map((n, r) => `${majuscule(n)} ${p.par_rarete[r]}`).join(" · "));
+
+  const vit = el("div", "vitrine");
+  cartesVitrine(vit, p.vitrine || []);
+  zone.append(tete, stats, detail, el("h3", "", "Vitrine"), vit);
+  if (!(p.vitrine || []).length) zone.append(el("p", "sous", moi ? "Ta vitrine est vide : choisis jusqu'à 3 cartes à montrer." : "Ce joueur n'a pas encore choisi de cartes."));
+
+  if (moi) {
+    const ouvrirChoix = el("button", "btn", "Choisir mes 3 cartes");
+    ouvrirChoix.type = "button";
+    const choix = el("div", "vit-choix");
+    choix.hidden = true;
+    ouvrirChoix.addEventListener("click", () => { choix.hidden = false; ouvrirChoix.hidden = true; preparerChoixVitrine(choix, vit); });
+    zone.append(ouvrirChoix, choix);
+  }
+}
+
+function preparerChoixVitrine(choix, vit) {
+  let sel = (etat.vitrine || []).map((v) => v.id);
+  choix.replaceChildren(el("p", "sous", "Touche des cartes de ta collection (3 au maximum), puis valide."));
+  const grille = el("div", "grille-choix");
+  const info = el("p", "sous");
+  const boutons = [];
+  const maj = () => {
+    info.textContent = `${sel.length} / 3 choisie${sel.length > 1 ? "s" : ""}`;
+    boutons.forEach(([b, c]) => b.setAttribute("aria-pressed", String(sel.includes(c.id))));
+  };
+  CARTES.filter((c) => (etat.collection[String(c.id)] || 0) > 0)
+    .sort((a, b) => rang(b) - rang(a) || a.id - b.id)
+    .forEach((c) => {
+      const b = el("button", "carte-fixe");
+      b.type = "button";
+      b.dataset.r = rang(c);
+      b.setAttribute("aria-label", `${c.nom}, ${c.rarete}`);
+      const tilt = el("div", "tilt");
+      tilt.append(faceCarte(c, { finition: meilleureFinition(c), paresseux: true }));
+      b.append(tilt);
+      b.addEventListener("click", () => {
+        if (sel.includes(c.id)) sel = sel.filter((x) => x !== c.id);
+        else if (sel.length < 3) sel.push(c.id);
+        maj();
+      });
+      boutons.push([b, c]);
+      grille.append(b);
+    });
+  const valider = el("button", "btn", "Valider ma vitrine");
+  valider.type = "button";
+  valider.addEventListener("click", () => {
+    etat.vitrine = sel.map((id) => ({ id, finition: meilleureFinition(CARTES.find((c) => c.id === id)) }));
+    sauvegarder();
+    const moi = profils.find((x) => x.uid === compte.uid);
+    if (moi) moi.vitrine = etat.vitrine;
+    ouvrirProfil(compte.uid);
+  });
+  const annuler = el("button", "btn second", "Annuler");
+  annuler.type = "button";
+  annuler.addEventListener("click", () => ouvrirProfil(compte.uid));
+  const actions = el("div", "actions");
+  actions.style.cssText = "justify-content:flex-start;min-height:0;margin:0";
+  actions.append(valider, annuler);
+  choix.append(info, grille, actions);
+  maj();
+}
+
 /* ---------- onglets ---------- */
 function onglet(nom) {
-  for (const n of ["boosters", "collection", "boutique", "infos", "admin"]) {
+  for (const n of ["boosters", "collection", "classement", "boutique", "infos", "admin"]) {
     $("#t-" + n).setAttribute("aria-selected", String(n === nom));
     $("#v-" + n).hidden = n !== nom;
   }
   if (nom === "collection") majCollection();
+  if (nom === "classement") rendreClassement();
   if (nom === "boutique") { $("#boutique-msg").textContent = ""; rendreBoutique(); majRoue(); }
   if (nom === "admin" && estAdmin()) rendreAdmin();
 }
@@ -1939,7 +2172,7 @@ async function texte(url) {
   return r.text();
 }
 
-let synchroPy = null, acheterPy = null, nouvelEtatPy = null, attentePy = null, roueurPy = null, codePy = null;
+let profilPy = null, synchroPy = null, acheterPy = null, nouvelEtatPy = null, attentePy = null, roueurPy = null, codePy = null;
 let moteurPret = null;
 let modeConnexion = "connecter";
 let minuteurHorloge = null;
@@ -1958,6 +2191,7 @@ async function chargerMoteur() {
   attentePy = g("attente_web");
   roueurPy = g("tourner_roue_web");
   codePy = g("utiliser_code_web");
+  profilPy = g("profil_web");
   REGL = JSON.parse(g("reglages_web")());
 
   $("#pack-nb").textContent = pluriel(REGL.taille_booster, "carte", "cartes");
@@ -2025,7 +2259,7 @@ async function entrer(session) {
   majStats();
   majCollection();
   rendreBoutique();
-  for (const n of ["collection", "boutique", "infos"]) $("#t-" + n).disabled = false;
+  for (const n of ["collection", "classement", "boutique", "infos"]) $("#t-" + n).disabled = false;
   $("#t-admin").hidden = !estAdmin();
   $("#t-admin").disabled = false;
   majRoue();
@@ -2113,6 +2347,7 @@ $("#ad-ur").addEventListener("click", () => adminOuvrir(["libre_ur"]));
 $("#ad-dix").addEventListener("click", () => adminOuvrir(Array(10).fill("libre")));
 $("#t-boosters").addEventListener("click", () => onglet("boosters"));
 $("#t-collection").addEventListener("click", () => onglet("collection"));
+$("#t-classement").addEventListener("click", () => onglet("classement"));
 $("#t-boutique").addEventListener("click", () => onglet("boutique"));
 $("#t-infos").addEventListener("click", () => onglet("infos"));
 $("#zoom-fermer").addEventListener("click", () => $("#zoom").close());
