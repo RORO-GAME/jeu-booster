@@ -122,13 +122,13 @@ def etat_initial(maintenant=0):
     # multi      : multiplicateur en cours {"facteur": 2, "fin": instant en ms}, ou None
     # roue_jour  : le jour (texte) où la roue a été tournée pour la dernière fois
     # codes_utilises : les codes déjà utilisés
-    # stat_cartes, stat_points : cartes tirées en boosters normaux et leurs points (sert à mesurer la "chance")
+    # stat_boosters, stat_points, stat_attendu : boosters ouverts (hors tests/admin), points tirés, points qu'on en attendait en moyenne ("chance")
     # vitrine    : jusqu'à 3 cartes montrées sur le profil : [{"id": 12, "finition": "brillante"}, ...]
     return {
         "collection": {}, "finitions": {}, "monnaie": 0, "boosters_ouverts": 0, "sans_rare": 0,
         "stock": BOOSTERS_DEPART, "horloge": int(maintenant), "progres": 0.0, "achetes": 0, "achetes_ur": 0,
         "multi": None, "roue_jour": "", "codes_utilises": [],
-        "stat_cartes": 0, "stat_points": 0, "vitrine": [],
+        "stat_boosters": 0, "stat_points": 0, "stat_attendu": 0.0, "vitrine": [],
     }
 
 
@@ -311,6 +311,30 @@ def points_carte(rarete, finition):
     return POINTS[rarete] * BONUS_FINITION[finition]
 
 
+def _points_moyens(cartes):
+    """(points moyens d'une carte tirée au hasard, points moyens d'une carte ultra rare ou mieux, chance d'en tirer une)."""
+    presentes = {c["rarete"] for c in cartes}
+    poids = {r: RARETES[r] for r in ORDRE if r in presentes}
+    total = sum(poids.values()) or 1
+    bonus = 1 + CHANCE_BRILLANTE * (BONUS_FINITION["brillante"] - 1) + CHANCE_ARC_EN_CIEL * (BONUS_FINITION["arc-en-ciel"] - 1)
+    moyenne = sum(poids[r] / total * POINTS[r] for r in poids) * bonus
+    hauts = [r for r in poids if ORDRE.index(r) >= ORDRE.index("ultra rare")]
+    p_haut = sum(poids[r] for r in hauts) / total
+    moy_haut = (sum(poids[r] * POINTS[r] for r in hauts) / (sum(poids[r] for r in hauts) or 1)) * bonus
+    return moyenne, moy_haut, p_haut
+
+
+def points_attendus(cartes, mode="normal"):
+    """Points qu'un booster rapporte en moyenne : sert à comparer la chance sans favoriser les boosters ultra rare garantis."""
+    moyenne, moy_haut, p_haut = _points_moyens(cartes)
+    attendu = TAILLE_BOOSTER * moyenne
+    if mode in ("ur", "libre_ur") and p_haut < 1:
+        sans = (1 - p_haut) ** TAILLE_BOOSTER                      # chance de n'avoir aucune ultra rare : la dernière carte est remplacée
+        moy_autre = (moyenne - p_haut * moy_haut) / (1 - p_haut)    # une carte qui n'est pas ultra rare ou mieux
+        attendu += sans * (moy_haut - moy_autre)
+    return attendu
+
+
 def tirer_finition():
     x = random.random()
     if x < CHANCE_ARC_EN_CIEL:
@@ -377,8 +401,9 @@ def tirer_booster(cartes, etat, mode="normal"):
     else:
         etat["sans_rare"] += 1
     etat["boosters_ouverts"] = etat.get("boosters_ouverts", 0) + 1
-    if mode in ("normal", "achete"):  # les boosters garantis ou de test ne comptent pas pour la "chance"
-        etat["stat_cartes"] = etat.get("stat_cartes", 0) + len(resultat)
+    if mode in ("normal", "achete", "ur"):  # les boosters libres (admin) ne comptent pas pour la "chance"
+        etat["stat_boosters"] = etat.get("stat_boosters", 0) + 1
+        etat["stat_attendu"] = etat.get("stat_attendu", 0.0) + points_attendus(cartes, mode)
         etat["stat_points"] = etat.get("stat_points", 0) + sum(points_carte(c["rarete"], c["finition"]) for c in resultat)
     for c in resultat:
         cle = str(c["id"])
@@ -479,13 +504,9 @@ def calculer_profil(etat, cartes):
         brillantes += 1 if b > 0 else 0
         arcs += 1 if a > 0 else 0
 
-    # "chance" : les points gagnés par carte tirée, comparés à ce qu'on gagne en moyenne (100 % = dans la moyenne)
-    poids = {r: RARETES[r] for r in ORDRE if r in rarete_de.values()}
-    total = sum(poids.values()) or 1
-    moyenne = sum(poids[r] / total * POINTS[r] for r in poids)
-    moyenne *= 1 + CHANCE_BRILLANTE * (BONUS_FINITION["brillante"] - 1) + CHANCE_ARC_EN_CIEL * (BONUS_FINITION["arc-en-ciel"] - 1)
-    tirees = etat.get("stat_cartes", 0)
-    chance = round(100 * etat.get("stat_points", 0) / (tirees * moyenne)) if tirees >= 15 and moyenne else None
+    # "chance" : points tirés par booster, comparés à ce qu'un booster rapporte en moyenne (100 % = dans la moyenne)
+    attendu = etat.get("stat_attendu", 0.0)
+    chance = round(100 * etat.get("stat_points", 0) / attendu) if etat.get("stat_boosters", 0) >= 5 and attendu else None
 
     # la vitrine ne garde que des cartes (et finitions) que le joueur possède vraiment
     vitrine = []

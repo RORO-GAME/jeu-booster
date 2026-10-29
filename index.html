@@ -311,17 +311,17 @@ button.carte-fixe { cursor: pointer; }
   background: linear-gradient(100deg, #fff 20%, #aee3ff 36%, #fff 48%, #f0c8ff 60%, #fff 78%) 0 0 / 250% 100%;
   -webkit-background-clip: text; background-clip: text; animation: lueur-texte 3.2s linear infinite; }
 /* les noms gagnent en éclat avec la rareté (la commune reste simple, la secrète a son propre style) */
-@keyframes nom-pulse { 0%, 100% { filter: drop-shadow(0 0 .8cqw var(--halo)) drop-shadow(0 .4cqw .8cqw rgba(0, 0, 0, .6)); } 50% { filter: drop-shadow(0 0 2.4cqw var(--halo)) drop-shadow(0 .4cqw .8cqw rgba(0, 0, 0, .6)); } }
+@keyframes nom-pulse { 0%, 100% { filter: drop-shadow(0 0 .8cqw var(--halo)) drop-shadow(0 .4cqw .8cqw rgba(0, 0, 0, .6)); } 50% { filter: drop-shadow(0 0 1.6cqw var(--halo)) drop-shadow(0 .4cqw .8cqw rgba(0, 0, 0, .6)); } }
 .recto[data-r="1"]:not(.manquante) .nom { color: #e6f1ff; letter-spacing: .02em; text-shadow: 0 0 2.4cqw rgba(110, 170, 255, .9), 0 .4cqw .8cqw rgba(0, 0, 0, .6); }
 .recto[data-r="2"]:not(.manquante) .nom, .recto[data-r="3"]:not(.manquante) .nom, .recto[data-r="4"]:not(.manquante) .nom {
   color: transparent; text-shadow: none; letter-spacing: .03em; background-size: 260% 100%;
   -webkit-background-clip: text; background-clip: text;
   animation: lueur-texte var(--vit) linear infinite, nom-pulse var(--puls) ease-in-out infinite; }
-.recto[data-r="2"]:not(.manquante) .nom { --halo: rgba(222, 110, 255, .85); --vit: 6s; --puls: 4s;
+.recto[data-r="2"]:not(.manquante) .nom { --halo: rgba(222, 110, 255, .85); --vit: 10s; --puls: 6s;
   background-image: linear-gradient(100deg, #ffd8f6 0%, #ff8de1 22%, #c9a2ff 45%, #ffd8f6 62%, #ff8de1 82%, #ffd8f6 100%); }
-.recto[data-r="3"]:not(.manquante) .nom { --halo: rgba(255, 70, 70, .95); --vit: 3.6s; --puls: 2.6s; -webkit-text-stroke: .15cqw rgba(90, 0, 10, .55);
+.recto[data-r="3"]:not(.manquante) .nom { --halo: rgba(255, 70, 70, .95); --vit: 10s; --puls: 6s; -webkit-text-stroke: .15cqw rgba(90, 0, 10, .55);
   background-image: linear-gradient(100deg, #fff1c9 0%, #ffb15c 18%, #ff4b4b 38%, #fff1c9 55%, #ff7a3d 75%, #ff4b4b 90%, #fff1c9 100%); }
-.recto[data-r="4"]:not(.manquante) .nom { --halo: rgba(255, 205, 80, 1); --vit: 2.8s; --puls: 2s; -webkit-text-stroke: .2cqw rgba(100, 55, 0, .6); letter-spacing: .04em;
+.recto[data-r="4"]:not(.manquante) .nom { --halo: rgba(255, 205, 80, 1); --vit: 9s; --puls: 5s; -webkit-text-stroke: .2cqw rgba(100, 55, 0, .6); letter-spacing: .04em;
   background-image: linear-gradient(100deg, #fff6c4 0%, #ffd34e 16%, #c98a14 32%, #fff6c4 48%, #ffe27a 66%, #d9971c 82%, #fff6c4 100%); }
 .recto[data-r="5"]:not(.manquante) .code { box-shadow: 0 0 3cqw rgba(255, 255, 255, .85); }
 .recto[data-r="5"]:not(.manquante) .trait { background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0)); box-shadow: 0 0 2cqw rgba(255, 255, 255, .8); }
@@ -388,6 +388,8 @@ button.carte-fixe { cursor: pointer; }
 .btn:disabled { opacity: .5; cursor: default; }
 /* classement et profils */
 .classement { max-width: 640px; margin: 0 auto; }
+.tri { display: flex; align-items: center; gap: 10px; margin-top: 12px; color: var(--doux); font-size: 14px; }
+.tri select { flex: 0 1 240px; padding: 9px 12px; }
 .rang-liste { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
 .rang-ligne { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; border: 1px solid var(--trait); border-radius: 14px; background: var(--panneau); color: var(--texte); font: inherit; text-align: left; cursor: pointer; }
 .rang-ligne:hover { border-color: rgba(255, 255, 255, .35); }
@@ -541,7 +543,7 @@ footer p { margin: 0; }
       Boosters
     </div>
     <div class="puces">
-      <div class="puce compte" id="puce-compte" hidden><b id="st-pseudo"></b></div>
+      <div class="puce compte" id="puce-compte" role="button" tabindex="0" title="Mon profil" style="cursor:pointer" hidden><b id="st-pseudo"></b></div>
       <div class="puce pieces"><b id="st-pieces">0</b> pièces</div>
       <div class="puce multi" id="puce-multi" hidden><b id="st-multi"></b></div>
       <div class="puce"><b id="st-dispo">0</b> <span id="st-dispo-lbl">boosters</span></div>
@@ -647,6 +649,16 @@ footer p { margin: 0; }
         <div id="cl-liste-zone">
           <h2 style="margin:0">Classement</h2>
           <p class="sous" id="cl-note">Clique sur un joueur pour voir son profil et sa vitrine.</p>
+          <label class="tri">Trier par
+            <select id="cl-tri" class="champ">
+              <option value="score">Score</option>
+              <option value="chance">Chance aux boosters</option>
+              <option value="boosters">Boosters ouverts</option>
+              <option value="possedees">Cartes différentes</option>
+              <option value="brillantes">Cartes brillantes</option>
+              <option value="arcs">Cartes arc-en-ciel</option>
+            </select>
+          </label>
           <ol class="rang-liste" id="cl-liste"></ol>
         </div>
         <div id="cl-profil" hidden></div>
@@ -2010,7 +2022,38 @@ function rendreInfos() {
 let profils = [];
 let profilOuvert = null;
 
-async function rendreClassement() {
+const CRITERES = {
+  score: ["Score", (p) => p.score, (p) => p.score.toLocaleString("fr-FR")],
+  chance: ["Chance", (p) => (p.chance == null ? -1 : p.chance), (p) => (p.chance == null ? "—" : p.chance + " %")],
+  boosters: ["Boosters", (p) => p.boosters, (p) => String(p.boosters)],
+  possedees: ["Cartes", (p) => p.possedees, (p) => `${p.possedees}/${p.total}`],
+  brillantes: ["Brillantes", (p) => p.brillantes, (p) => String(p.brillantes)],
+  arcs: ["Arc-en-ciel", (p) => p.arcs, (p) => String(p.arcs)],
+};
+let critere = "score";
+function trierProfils() {
+  const val = CRITERES[critere][1];
+  profils.sort((a, b) => val(b) - val(a) || b.score - a.score || String(a.pseudo).localeCompare(b.pseudo));
+}
+function dessinerListe() {
+  const liste = $("#cl-liste");
+  liste.replaceChildren();
+  if (!profils.length) liste.append(el("li", "sous", "Personne dans le classement pour l'instant."));
+  const [nomCrit, , format] = CRITERES[critere];
+  profils.forEach((p, i) => {
+    const li = el("li");
+    const b = el("button", "rang-ligne" + (p.uid === compte.uid ? " moi" : ""));
+    b.type = "button";
+    b.append(el("span", "rang-num", String(i + 1)), el("span", "rang-nom", p.pseudo),
+      el("span", "rang-det", critere === "score" ? `${p.possedees}/${p.total} cartes` : `Score ${p.score.toLocaleString("fr-FR")}`),
+      el("span", "rang-score", format(p)));
+    b.addEventListener("click", () => ouvrirProfil(p.uid));
+    li.append(b);
+    liste.append(li);
+  });
+}
+
+async function rendreClassement(pour) {
   $("#cl-profil").hidden = true;
   $("#cl-liste-zone").hidden = false;
   profilOuvert = null;
@@ -2030,22 +2073,12 @@ async function rendreClassement() {
     profils.push({ ...moi, uid: compte.uid });
   }
   profils = profils.filter((p) => p.pseudo !== REGL.admin);
-  profils.sort((a, b) => b.score - a.score || (b.possedees || 0) - (a.possedees || 0) || String(a.pseudo).localeCompare(b.pseudo));
+  trierProfils();
   $("#cl-note").textContent = backend.nom === "local"
     ? "Mode sans serveur : seuls les comptes de cet appareil sont classés. Clique sur un joueur pour voir son profil."
     : "Clique sur un joueur pour voir son profil et sa vitrine.";
-  liste.replaceChildren();
-  if (!profils.length) liste.append(el("li", "sous", "Personne dans le classement pour l'instant."));
-  profils.forEach((p, i) => {
-    const li = el("li");
-    const b = el("button", "rang-ligne" + (p.uid === compte.uid ? " moi" : ""));
-    b.type = "button";
-    b.append(el("span", "rang-num", String(i + 1)), el("span", "rang-nom", p.pseudo),
-      el("span", "rang-det", `${p.possedees}/${p.total} cartes`), el("span", "rang-score", p.score.toLocaleString("fr-FR")));
-    b.addEventListener("click", () => ouvrirProfil(p.uid));
-    li.append(b);
-    liste.append(li);
-  });
+  dessinerListe();
+  if (pour) ouvrirProfil(pour);
 }
 
 function cartesVitrine(zone, vitrine) {
@@ -2076,8 +2109,8 @@ function ouvrirProfil(uid) {
 
   const retour = el("button", "btn second", "‹ Classement");
   retour.type = "button";
-  retour.addEventListener("click", rendreClassement);
-  const place = profils.indexOf(p) + 1;
+  retour.addEventListener("click", () => rendreClassement());
+  const place = [...profils].sort((a, b) => b.score - a.score).indexOf(p) + 1;
   const tete = el("div", "profil-tete");
   tete.append(retour, el("h2", "", p.pseudo + (moi ? " (toi)" : "")), el("span", "sous", `${place}${place === 1 ? "er" : "e"} sur ${profils.length}`));
 
@@ -2085,7 +2118,7 @@ function ouvrirProfil(uid) {
   const stat = (v, l) => { const d = el("div"); d.append(el("b", "", v), el("span", "", l)); stats.append(d); };
   stat(p.score.toLocaleString("fr-FR"), "Score");
   stat(`${p.possedees}/${p.total}`, "Cartes différentes");
-  stat(p.chance == null ? "—" : p.chance + " %", p.chance == null ? "Chance (pas assez de boosters)" : "Chance aux boosters (100 % = moyenne)");
+  stat(p.chance == null ? "—" : p.chance + " %", p.chance == null ? "Chance (il faut 5 boosters)" : "Chance aux boosters (100 % = moyenne)");
   stat(String(p.boosters), "Boosters ouverts");
   stat(String(p.brillantes), "Cartes brillantes");
   stat(String(p.arcs), "Cartes arc-en-ciel");
@@ -2154,13 +2187,13 @@ function preparerChoixVitrine(choix, vit) {
 }
 
 /* ---------- onglets ---------- */
-function onglet(nom) {
+function onglet(nom, profilDe) {
   for (const n of ["boosters", "collection", "classement", "boutique", "infos", "admin"]) {
     $("#t-" + n).setAttribute("aria-selected", String(n === nom));
     $("#v-" + n).hidden = n !== nom;
   }
   if (nom === "collection") majCollection();
-  if (nom === "classement") rendreClassement();
+  if (nom === "classement") rendreClassement(profilDe);
   if (nom === "boutique") { $("#boutique-msg").textContent = ""; rendreBoutique(); majRoue(); }
   if (nom === "admin" && estAdmin()) rendreAdmin();
 }
@@ -2348,6 +2381,10 @@ $("#ad-dix").addEventListener("click", () => adminOuvrir(Array(10).fill("libre")
 $("#t-boosters").addEventListener("click", () => onglet("boosters"));
 $("#t-collection").addEventListener("click", () => onglet("collection"));
 $("#t-classement").addEventListener("click", () => onglet("classement"));
+$("#cl-tri").addEventListener("change", (e) => { critere = e.target.value; trierProfils(); dessinerListe(); });
+const versMonProfil = () => { if (compte && !estAdmin() && phase !== "reveal") onglet("classement", compte.uid); };
+$("#puce-compte").addEventListener("click", versMonProfil);
+$("#puce-compte").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); versMonProfil(); } });
 $("#t-boutique").addEventListener("click", () => onglet("boutique"));
 $("#t-infos").addEventListener("click", () => onglet("infos"));
 $("#zoom-fermer").addEventListener("click", () => $("#zoom").close());
