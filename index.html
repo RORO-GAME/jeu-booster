@@ -388,6 +388,8 @@ button.carte-fixe { cursor: pointer; }
 .btn:disabled { opacity: .5; cursor: default; }
 /* classement et profils */
 .classement { max-width: 640px; margin: 0 auto; }
+.groupe-titre { grid-column: 1 / -1; margin: 18px 0 2px; padding-bottom: 6px; border-bottom: 1px solid var(--trait); font-size: 16px; color: var(--doux); }
+.groupe-titre:first-child { margin-top: 4px; }
 .coll-outils { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 4px; }
 .tri { display: flex; align-items: center; gap: 10px; margin-top: 12px; color: var(--doux); font-size: 14px; }
 .tri select { flex: 0 1 240px; padding: 9px 12px; }
@@ -528,8 +530,12 @@ footer p { margin: 0; }
   .onglets { width: 100%; }
   .onglets button { flex: 1; padding: 9px 4px; font-size: 14px; }
   .onglets .n { display: none; }
-  .grille { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 20px 10px; }
+  .grille { grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); gap: 10px 6px; }
+  .coll-cols { display: flex !important; }
 }
+.coll-cols { display: none; align-items: center; gap: 6px; margin-top: 12px; color: var(--doux); font-size: 14px; }
+.coll-cols button { padding: 6px 12px; border: 1px solid var(--trait); border-radius: 999px; background: none; color: var(--doux); font: inherit; cursor: pointer; }
+.coll-cols button[aria-pressed="true"] { background: rgba(255, 255, 255, .14); color: #fff; border-color: rgba(255, 255, 255, .4); }
 @media (prefers-reduced-motion: reduce) {
   .recto:not(.manquante) .nom { animation: none !important; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -617,6 +623,9 @@ footer p { margin: 0; }
             <option value="exemplaires">Nombre d'exemplaires</option>
           </select>
         </label>
+        <div class="coll-cols" role="group" aria-label="Cartes par ligne">Par ligne
+          <button type="button" data-n="3">3</button><button type="button" data-n="4">4</button><button type="button" data-n="5">5</button>
+        </div>
         <label class="tri">Série
           <select id="coll-serie" class="champ"><option value="">Toutes</option></select>
         </label>
@@ -1893,7 +1902,16 @@ function majCollection() {
   const grille = $("#grille");
   grille.replaceChildren();
   if (!visibles.length) grille.append(el("p", "vide", "Aucune carte ici pour l'instant."));
+  let groupe = null;
   visibles.forEach((c) => {
+    if (triColl === "serie" || triColl.startsWith("rarete")) {
+      const g = triColl === "serie" ? (c.tag || "Sans série") : c.rarete;
+      if (g !== groupe) {
+        groupe = g;
+        const lot = visibles.filter((x) => (triColl === "serie" ? (x.tag || "Sans série") : x.rarete) === g);
+        grille.append(el("h3", "groupe-titre", `${majuscule(g)} · ${lot.filter((x) => nb(x) > 0).length}/${lot.length}`));
+      }
+    }
     const n = nb(c);
     const conteneur = el(n ? "button" : "div", "carte-fixe");
     conteneur.dataset.r = rang(c);
@@ -2413,6 +2431,17 @@ $("#ad-ur").addEventListener("click", () => adminOuvrir(["libre_ur"]));
 $("#ad-dix").addEventListener("click", () => adminOuvrir(Array(10).fill("libre")));
 $("#t-boosters").addEventListener("click", () => onglet("boosters"));
 $("#t-collection").addEventListener("click", () => onglet("collection"));
+function colonnes(n) {
+  $("#grille").style.setProperty("--cols", n);
+  document.querySelectorAll(".coll-cols button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.n === String(n))));
+}
+let nbCols = 4;
+try { nbCols = Number(localStorage.getItem("boosters-colonnes")) || 4; } catch (_) { /* stockage indisponible */ }
+colonnes(nbCols);
+document.querySelectorAll(".coll-cols button").forEach((b) => b.addEventListener("click", () => {
+  nbCols = Number(b.dataset.n); colonnes(nbCols);
+  try { localStorage.setItem("boosters-colonnes", String(nbCols)); } catch (_) { /* tant pis */ }
+}));
 $("#coll-tri").addEventListener("change", (e) => { triColl = e.target.value; majCollection(); });
 $("#coll-serie").addEventListener("change", (e) => { serieColl = e.target.value; majCollection(); });
 $("#t-classement").addEventListener("click", () => onglet("classement"));
