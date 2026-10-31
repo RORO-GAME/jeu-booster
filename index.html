@@ -388,6 +388,7 @@ button.carte-fixe { cursor: pointer; }
 .btn:disabled { opacity: .5; cursor: default; }
 /* classement et profils */
 .classement { max-width: 640px; margin: 0 auto; }
+.coll-outils { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 4px; }
 .tri { display: flex; align-items: center; gap: 10px; margin-top: 12px; color: var(--doux); font-size: 14px; }
 .tri select { flex: 0 1 240px; padding: 9px 12px; }
 .rang-liste { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
@@ -605,6 +606,21 @@ footer p { margin: 0; }
       <div class="jauge large"><span id="coll-jauge"></span></div>
       <div class="filtres" id="filtres" role="group" aria-label="Filtrer par rareté"></div>
       <div class="filtres statut" id="filtres-statut" role="group" aria-label="Filtrer par état"></div>
+      <div class="coll-outils">
+        <label class="tri">Trier par
+          <select id="coll-tri" class="champ">
+            <option value="rarete-asc">Rareté (commune d'abord)</option>
+            <option value="rarete-desc">Rareté (la plus rare d'abord)</option>
+            <option value="numero">Numéro</option>
+            <option value="nom">Nom (A → Z)</option>
+            <option value="serie">Série</option>
+            <option value="exemplaires">Nombre d'exemplaires</option>
+          </select>
+        </label>
+        <label class="tri">Série
+          <select id="coll-serie" class="champ"><option value="">Toutes</option></select>
+        </label>
+      </div>
       <div class="grille" id="grille"></div>
     </section>
 
@@ -800,6 +816,7 @@ let file = [];            // boosters à ouvrir à la suite (achat, code, roue, 
 let fileTotal = 0, fileFait = 0;
 let roueEnCours = false, rotRoue = 0, segmentsRoue = [];
 let adminTest = false, dernierTest = false, codesAdmin = {};
+let triColl = "rarete-asc", serieColl = "";
 let filtre = -1;          // filtre de rareté dans la collection
 let statut = "toutes";    // filtre d'état dans la collection
 
@@ -1831,6 +1848,13 @@ function majCollection() {
     conteneur.append(b);
   };
 
+  const choixSerie = $("#coll-serie");
+  if (choixSerie.options.length === 1) {
+    for (const t of [...new Set(CARTES.map((c) => c.tag).filter(Boolean))].sort((a, b) => a.localeCompare(b, "fr"))) choixSerie.add(new Option(majuscule(t), t));
+  }
+  choixSerie.value = serieColl;
+  $("#coll-tri").value = triColl;
+
   const filtres = $("#filtres");
   filtres.replaceChildren();
   pastille(filtres, "Toutes les raretés", filtre === -1, () => { filtre = -1; majCollection(); });
@@ -1847,6 +1871,7 @@ function majCollection() {
 
   const passe = (c) => {
     if (filtre !== -1 && rang(c) !== filtre) return false;
+    if (serieColl && (c.tag || "") !== serieColl) return false;
     const e = exemplaires(c);
     if (statut === "possedees") return e.total > 0;
     if (statut === "manquantes") return e.total === 0;
@@ -1854,7 +1879,15 @@ function majCollection() {
     if (statut === "arc") return e["arc-en-ciel"] > 0;
     return true;
   };
-  const visibles = CARTES.filter(passe).sort((a, b) => rang(a) - rang(b) || a.id - b.id);
+  const comparer = {
+    "rarete-asc": (a, b) => rang(a) - rang(b) || a.id - b.id,
+    "rarete-desc": (a, b) => rang(b) - rang(a) || a.id - b.id,
+    numero: (a, b) => a.id - b.id,
+    nom: (a, b) => a.nom.localeCompare(b.nom, "fr", { sensitivity: "base" }),
+    serie: (a, b) => (a.tag || "").localeCompare(b.tag || "", "fr") || rang(b) - rang(a) || a.id - b.id,
+    exemplaires: (a, b) => nb(b) - nb(a) || rang(b) - rang(a) || a.id - b.id,
+  }[triColl];
+  const visibles = CARTES.filter(passe).sort(comparer);
   const possedeesVisibles = visibles.filter((c) => nb(c) > 0);
 
   const grille = $("#grille");
@@ -2380,6 +2413,8 @@ $("#ad-ur").addEventListener("click", () => adminOuvrir(["libre_ur"]));
 $("#ad-dix").addEventListener("click", () => adminOuvrir(Array(10).fill("libre")));
 $("#t-boosters").addEventListener("click", () => onglet("boosters"));
 $("#t-collection").addEventListener("click", () => onglet("collection"));
+$("#coll-tri").addEventListener("change", (e) => { triColl = e.target.value; majCollection(); });
+$("#coll-serie").addEventListener("change", (e) => { serieColl = e.target.value; majCollection(); });
 $("#t-classement").addEventListener("click", () => onglet("classement"));
 $("#cl-tri").addEventListener("change", (e) => { critere = e.target.value; trierProfils(); dessinerListe(); });
 const versMonProfil = () => { if (compte && !estAdmin() && phase !== "reveal") onglet("classement", compte.uid); };
