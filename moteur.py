@@ -465,6 +465,34 @@ def ouvrir_booster_web(cartes_json, etat_json, maintenant, mode):
     return json.dumps({"cartes": tirage, "pitie": pitie, "etat": etat}, ensure_ascii=False)
 
 
+def ouvrir_masse_web(cartes_json, etat_json, maintenant, mode, nombre):
+    """Admin : ouvre `nombre` boosters d'un coup et renvoie un résumé (pas le détail de chaque tirage)."""
+    cartes = json.loads(cartes_json)
+    etat = json.loads(etat_json)
+    nombre = max(1, min(int(nombre), 5000))
+    par_rarete = {r: 0 for r in ORDRE}
+    finitions = {"brillante": 0, "arc-en-ciel": 0}
+    nouvelles = pieces = 0
+    meilleures = {}  # (id, finition) -> nombre d'exemplaires, pour les raretés ultra rare et mieux
+    seuil = ORDRE.index("ultra rare")
+    for _ in range(nombre):
+        tirage, _pitie = ouvrir_booster(cartes, etat, maintenant, mode)
+        for c in tirage:
+            par_rarete[c["rarete"]] += 1
+            if c["finition"] in finitions:
+                finitions[c["finition"]] += 1
+            nouvelles += 1 if c["nouvelle"] else 0
+            pieces += c["pieces"]
+            if ORDRE.index(c["rarete"]) >= seuil or c["finition"] != "normale":
+                cle = (c["id"], c["finition"])
+                meilleures[cle] = meilleures.get(cle, 0) + 1
+    liste = [{"id": i, "finition": f, "nb": n} for (i, f), n in meilleures.items()]
+    return json.dumps({
+        "nombre": nombre, "cartes": nombre * TAILLE_BOOSTER, "par_rarete": [par_rarete[r] for r in ORDRE],
+        "finitions": finitions, "nouvelles": nouvelles, "pieces": pieces, "meilleures": liste, "etat": etat,
+    }, ensure_ascii=False)
+
+
 def acheter_web(etat_json, offre_id, maintenant):
     etat = json.loads(etat_json)
     erreur = acheter(etat, offre_id, maintenant)

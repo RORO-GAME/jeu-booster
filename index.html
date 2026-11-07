@@ -390,6 +390,10 @@ button.carte-fixe { cursor: pointer; }
 .classement { max-width: 640px; margin: 0 auto; }
 .groupe-titre { grid-column: 1 / -1; margin: 18px 0 2px; padding-bottom: 6px; border-bottom: 1px solid var(--trait); font-size: 16px; color: var(--doux); }
 .groupe-titre:first-child { margin-top: 4px; }
+.am-resume { margin-top: 14px; font-size: 14.5px; }
+.table-masse { border-collapse: collapse; margin: 8px 0; }
+.table-masse td { padding: 3px 18px 3px 0; }
+.table-masse td:last-child { font-variant-numeric: tabular-nums; font-weight: 700; }
 .coll-outils { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 4px; }
 .tri { display: flex; align-items: center; gap: 10px; margin-top: 12px; color: var(--doux); font-size: 14px; }
 .tri select { flex: 0 1 240px; padding: 9px 12px; }
@@ -701,6 +705,18 @@ footer p { margin: 0; }
             <button type="button" class="btn ur" id="ad-ur">1 booster ultra rare</button>
             <button type="button" class="btn second" id="ad-dix">10 boosters</button>
           </div>
+        </div>
+        <div class="panneau">
+          <h3>Ouverture en masse</h3>
+          <p>Ouvre beaucoup de boosters d'un coup et affiche un résumé, sans les animations. Respecte la case « Mode test » ci-dessus.</p>
+          <div class="admin-form" style="margin-bottom:10px">
+            <label>Nombre<input class="champ" id="am-nb" type="number" min="1" max="5000" value="1000"></label>
+            <label>Type
+              <select class="champ" id="am-type"><option value="libre_ur">Ultra rare garanti</option><option value="libre">Normal</option></select>
+            </label>
+          </div>
+          <button type="button" class="btn" id="am-go">Ouvrir en masse</button>
+          <div id="am-res" aria-live="polite"></div>
         </div>
         <div class="panneau">
           <h3>Codes de la boutique</h3>
@@ -1821,6 +1837,41 @@ async function enregistrerCode(e) {
   rendreAdmin();
 }
 
+function ouvrirEnMasse() {
+  if (phase !== "pret" && phase !== "fini") return;
+  const zone = $("#am-res");
+  const nb = Math.max(1, Math.min(5000, Math.floor(Number($("#am-nb").value) || 0)));
+  const mode = $("#am-type").value;
+  const test = $("#admin-test").checked;
+  $("#am-go").disabled = true;
+  zone.textContent = "Tirage en cours…";
+  setTimeout(() => {  // laisse le temps d'afficher le message avant le calcul
+    try {
+      const res = JSON.parse(massePy(CARTES_TXT, JSON.stringify(etat), Date.now(), mode, nb));
+      if (!test) { etat = res.etat; sauvegarder(); majStats(); majCollection(); }
+      const bloc = el("div", "am-resume");
+      bloc.append(el("p", "", `${pluriel(res.nombre, "booster ouvert", "boosters ouverts")} (${res.cartes} cartes)${test ? " — mode test : rien n'est enregistré" : ""}.`));
+      const tab = el("table", "table-masse");
+      REGL.ordre.forEach((n, r) => {
+        const tr = el("tr"); tr.append(el("td", "", majuscule(n)), el("td", "", String(res.par_rarete[r]))); tab.append(tr);
+      });
+      bloc.append(tab);
+      bloc.append(el("p", "", `${res.finitions.brillante} brillantes · ${res.finitions["arc-en-ciel"]} arc-en-ciel · ${res.nouvelles} nouvelles cartes · ${res.pieces} pièces gagnées${test ? " (non gardées)" : ""}`));
+      const top = res.meilleures.map((m) => ({ ...m, c: CARTES.find((x) => x.id === m.id) })).filter((m) => m.c)
+        .sort((a, b) => rang(b.c) - rang(a.c) || (b.finition !== "normale") - (a.finition !== "normale") || a.c.id - b.c.id);
+      const lourd = top.filter((m) => rang(m.c) >= 4 || m.finition === "arc-en-ciel");
+      if (lourd.length) bloc.append(el("p", "", "Les plus belles : " + lourd.slice(0, 25).map((m) =>
+        `${m.c.nom}${m.finition === "normale" ? "" : " (" + NOMS_FIN[m.finition].toLowerCase() + ")"}${m.nb > 1 ? " ×" + m.nb : ""}`).join(", ") + (lourd.length > 25 ? "…" : "")));
+      zone.replaceChildren(bloc);
+    } catch (e) {
+      console.error(e);
+      zone.textContent = "Le tirage a échoué : " + (e.message || e);
+    }
+    $("#am-go").disabled = false;
+  }, 30);
+}
+$("#am-go").addEventListener("click", ouvrirEnMasse);
+
 function adminOuvrir(modes) {
   adminTest = $("#admin-test").checked;
   lancerFile(modes);
@@ -2256,7 +2307,7 @@ async function texte(url) {
   return r.text();
 }
 
-let profilPy = null, synchroPy = null, acheterPy = null, nouvelEtatPy = null, attentePy = null, roueurPy = null, codePy = null;
+let massePy = null, profilPy = null, synchroPy = null, acheterPy = null, nouvelEtatPy = null, attentePy = null, roueurPy = null, codePy = null;
 let moteurPret = null;
 let modeConnexion = "connecter";
 let minuteurHorloge = null;
@@ -2276,6 +2327,7 @@ async function chargerMoteur() {
   roueurPy = g("tourner_roue_web");
   codePy = g("utiliser_code_web");
   profilPy = g("profil_web");
+  massePy = g("ouvrir_masse_web");
   REGL = JSON.parse(g("reglages_web")());
 
   $("#pack-nb").textContent = pluriel(REGL.taille_booster, "carte", "cartes");
