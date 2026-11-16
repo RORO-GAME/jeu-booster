@@ -30,7 +30,7 @@
 [data-r="3"] { --c: #ff4458; --c-clair: #ff9c9c; --c-fonce: #c4122a; --rb: .75; --rf: .33; }
 [data-r="4"] { --c: #f2c14e; --c-clair: #fff1ae; --c-fonce: #a8741d; --rb: .9;  --rf: .42;
   --bord: linear-gradient(150deg, #fff3b8, #e2ad45 30%, #a8741d 52%, #f1cf6a 78%, #fff0a8); }
-[data-r="5"] { --c: #dfe6f0; --c-clair: #ffffff; --c-fonce: #8fa0b5; --rb: 1;   --rf: .5;
+[data-r="5"] { --c: #dfe6f0; --c-clair: #ffffff; --c-fonce: #8fa0b5; --rb: 1;   --rf: .4;
   --bord: linear-gradient(150deg, #ffffff, #bcc8d8 26%, #f4f8ff 48%, #9eb0c6 72%, #f6faff); }
 
 * { box-sizing: border-box; }
@@ -207,7 +207,8 @@ button.carte-fixe { cursor: pointer; }
 .foil, .glare { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
 .foil {
   mix-blend-mode: color-dodge;
-  background: linear-gradient(115deg, #ff7ad9, #ffe36b 18%, #8ef0a3 34%, #6fd0ff 50%, #a58bff 66%, #ff7ad9 84%, #ffe36b);
+  /* teintes rouge, rose, violet et bleu surtout : le jaune et le vert lavaient l'image. Un peu d'orange seulement tout au bout. */
+  background: linear-gradient(115deg, #ff5c8a, #ff7ad9 12%, #a58bff 26%, #6f9bff 38%, #b66bff 50%, #ff5c8a 62%, #ff4458 72%, #d96bff 84%, #ff7ad9 93%, #ff9a5c);
   background-size: 250% 250%;
 }
 .glare { mix-blend-mode: overlay; background: radial-gradient(circle at var(--mx, 30%) var(--my, 22%), rgba(255, 255, 255, .6), transparent 46%); }
@@ -390,6 +391,24 @@ button.carte-fixe { cursor: pointer; }
 .classement { max-width: 640px; margin: 0 auto; }
 .groupe-titre { grid-column: 1 / -1; margin: 18px 0 2px; padding-bottom: 6px; border-bottom: 1px solid var(--trait); font-size: 16px; color: var(--doux); }
 .groupe-titre:first-child { margin-top: 4px; }
+/* cartes fantômes : l'image se révèle en mosaïque */
+.art canvas.fant { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.recto.fantome .ext { filter: saturate(calc(.25 + var(--rev, 0) * .75)); }
+.art.fantome-art img { display: none; }
+.recto.fantome .ombre { opacity: calc(.6 + var(--rev, 0) * .4); }
+.fant-pastille { position: absolute; top: 18cqw; left: 5cqw; z-index: 4; padding: .15em .65em; border-radius: 3cqw; font-size: 7cqw; line-height: 1.25; letter-spacing: .06em; font-style: italic;
+  color: #e9f1ff; background: rgba(16, 24, 38, .78); border: .4cqw solid rgba(255,255,255,.35); text-transform: uppercase; }
+.recto.fantome[data-rev="100"] .fant-pastille { background: linear-gradient(150deg, var(--c-clair), var(--c)); color: #10131c; border-color: transparent; }
+.fant-compte { position: absolute; left: 6cqw; bottom: 3.2cqw; font-size: 5.6cqw; letter-spacing: .08em; color: rgba(255,255,255,.7); z-index: 4; font-style: normal; }
+
+.coll-doublons { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 14px 0 0; padding: 12px 16px; border: 1px solid var(--trait); border-radius: 14px; background: var(--panneau); font-size: 14.5px; }
+.coll-doublons p { margin: 0; flex: 1 1 240px; color: var(--doux); }
+.zoom-actions { margin: 0 0 14px; }
+.zoom-actions p { margin: 0 0 10px; }
+.zoom-actions .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.zoom-actions .btn { padding: 9px 14px; font-size: 14px; }
+.zoom-actions .msg { color: var(--texte); min-height: 1.2em; }
+
 .am-resume { margin-top: 14px; font-size: 14.5px; }
 .table-masse { border-collapse: collapse; margin: 8px 0; }
 .table-masse td { padding: 3px 18px 3px 0; }
@@ -457,6 +476,12 @@ button.carte-fixe { cursor: pointer; }
 #roue { display: block; width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 0 5px rgba(255, 255, 255, .14), 0 22px 40px -18px rgba(0, 0, 0, .9);
   transition: transform 5.4s cubic-bezier(.1, .72, .12, 1); }
 #roue text { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 800; letter-spacing: -0.01em; }
+.bonus { margin-top: 18px; }
+.bonus h3 { margin: 0 0 4px; font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
+.bonus-liste { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.bonus-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; border: 1px solid var(--bord, rgba(255,255,255,.14)); border-radius: 14px; background: rgba(255,255,255,.04); }
+.bonus-item b { font-size: 17px; }
+.bonus-item span { color: var(--doux); font-size: 13.5px; }
 .roue-texte { flex: 1 1 260px; max-width: 400px; }
 .roue-texte h3 { margin: 0 0 6px; font-size: 22px; font-weight: 800; letter-spacing: -0.03em; }
 .roue-texte p { margin: 0 0 14px; color: var(--doux); font-size: 14.5px; }
@@ -614,6 +639,10 @@ footer p { margin: 0; }
         </div>
       </div>
       <div class="jauge large"><span id="coll-jauge"></span></div>
+      <div class="coll-doublons" id="coll-doublons">
+        <p id="coll-doublons-txt"></p>
+        <button type="button" class="btn second" id="btn-vendre-tout">Vendre tous les doublons</button>
+      </div>
       <div class="filtres" id="filtres" role="group" aria-label="Filtrer par rareté"></div>
       <div class="filtres statut" id="filtres-statut" role="group" aria-label="Filtrer par état"></div>
       <div class="coll-outils">
@@ -652,11 +681,18 @@ footer p { margin: 0; }
         </div>
         <div class="roue-texte">
           <h3>Roue de la chance</h3>
-          <p>Un tour par jour, remis à zéro à minuit. Pièces, booster, multiplicateur… ou rien du tout.</p>
+          <p id="roue-desc">Un tour gratuit par jour, remis à zéro à minuit. Ensuite, autant de tours que tu veux pour quelques pièces. Pièces, booster, multiplicateur, joker fantôme… ou rien du tout.</p>
           <button type="button" class="btn" id="roue-btn">Tourner la roue</button>
           <p class="sous" id="roue-compte" style="margin-top:12px"></p>
           <div class="roue-resultat" id="roue-resultat" aria-live="polite"></div>
         </div>
+      </div>
+
+      <div class="panneau bonus" id="bonus-zone" hidden>
+        <h3>Mes bonus</h3>
+        <p class="sous">Les multiplicateurs et les jokers gagnés à la roue s'empilent : utilise-les quand tu veux.</p>
+        <div class="bonus-liste" id="bonus-liste"></div>
+        <p class="message" id="bonus-msg" aria-live="polite"></p>
       </div>
 
       <div class="boutique" id="boutique"></div>
@@ -757,7 +793,7 @@ footer p { margin: 0; }
       <h3 id="zoom-nom"></h3>
       <p class="sous" id="zoom-details"></p>
       <div class="zoom-fins" id="zoom-fins" role="group" aria-label="Finition"></div>
-      <p id="zoom-valeur"></p>
+      <div class="zoom-actions" id="zoom-actions"></div>
       <div class="zoom-nav">
         <button type="button" class="btn second" id="zoom-prec">‹ Précédente</button>
         <button type="button" class="btn second" id="zoom-suiv">Suivante ›</button>
@@ -1114,6 +1150,96 @@ async function envoyer(keepalive) {
   }
 }
 
+/* ---------- doublons, améliorations et cartes fantômes ---------- */
+const idDe = (c) => String(c.id);
+const copiesDe = (c) => etat.collection[idDe(c)] || 0;
+function infoFantome(c) {  // {k, requis} tant qu'une carte fantôme n'est pas entièrement révélée
+  if (!c.fantome) return null;
+  const k = copiesDe(c), requis = REGL.requis_fantome[rang(c)];
+  return k < requis ? { k, requis } : null;
+}
+const pRevele = (k, requis) => (k <= 0 ? 0 : requis <= 1 ? 1 : Math.min(1, 0.15 + 0.85 * (k - 1) / (requis - 1)));
+const valeurVente = (r, f) => Math.max(1, Math.floor(REGL.valeurs[r] * (REGL.bonus[f] || 1) + 0.5));
+const FIN_ORDRE = ["arc-en-ciel", "brillante", "normale"];   // du mieux fini au moins bien fini
+const requisDe = (c) => (c.fantome ? REGL.requis_fantome[rang(c)] : 1);
+function copiesTriees(c) {  // les exemplaires qu'on possède, du mieux fini au moins bien fini
+  const inv = (etat.inv && etat.inv[idDe(c)]) || {};
+  const l = [];
+  for (const f of FIN_ORDRE) for (let i = 0; i < (inv[f] || 0); i++) l.push(f);
+  return l;
+}
+function stockDe(c) {  // les doublons vendables (on garde toujours le mieux fini) : {normale, brillante, arc-en-ciel, total, valeur, premiere}
+  const vend = copiesTriees(c).slice(requisDe(c));
+  const r = rang(c);
+  const out = { "normale": 0, "brillante": 0, "arc-en-ciel": 0, total: vend.length, valeur: 0, premiere: 0 };
+  for (const f of vend) { out[f]++; out.valeur += valeurVente(r, f); }
+  const pire = vend[vend.length - 1];
+  out.premiere = pire ? valeurVente(r, pire) : 0;
+  return out;
+}
+
+const COLS_M = 25, LIG_M = 35, NB_TUILES = COLS_M * LIG_M;
+const ordresTuiles = new Map();
+function ordreTuiles(id) {  // l'ordre dans lequel les carreaux se révèlent : toujours le même pour une carte
+  if (!ordresTuiles.has(id)) {
+    let graine = (id * 2654435761) >>> 0;
+    const alea = () => (graine = (Math.imul(graine, 1664525) + 1013904223) >>> 0) / 4294967296;
+    const o = [...Array(NB_TUILES).keys()];
+    for (let i = NB_TUILES - 1; i > 0; i--) { const j = Math.floor(alea() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; }
+    const rg = new Array(NB_TUILES);
+    o.forEach((t, i) => (rg[t] = i));
+    ordresTuiles.set(id, rg);
+  }
+  return ordresTuiles.get(id);
+}
+function dessinerMosaique(cv, c, img, p) {
+  const W = cv.width, H = cv.height, g = cv.getContext("2d"), rg = ordreTuiles(c.id);
+  const vus = p * NB_TUILES, tw = W / COLS_M, th = H / LIG_M;
+  g.clearRect(0, 0, W, H);
+  if (img && img.complete && img.naturalWidth) {
+    const s = Math.max(W / img.naturalWidth, H / img.naturalHeight), iw = img.naturalWidth * s, ih = img.naturalHeight * s;
+    g.drawImage(img, (W - iw) / 2, (H - ih) / 2, iw, ih);
+  } else { g.fillStyle = "#26364d"; g.fillRect(0, 0, W, H); }
+  for (let t = 0; t < NB_TUILES; t++) {
+    const x = (t % COLS_M) * tw, y = Math.floor(t / COLS_M) * th, r = rg[t];
+    if (r >= vus) { g.fillStyle = ((t % COLS_M) + Math.floor(t / COLS_M)) % 2 ? "#121c2c" : "#0f1826"; g.fillRect(x, y, tw + .5, th + .5); }
+    else if (p < 0.999) {
+      const frais = 1 - (vus - r) / (NB_TUILES * 0.07);  // les carreaux qui viennent d'apparaître brillent un instant
+      if (frais > 0) { g.fillStyle = `rgba(255,255,255,${(frais * 0.85).toFixed(2)})`; g.fillRect(x, y, tw + .5, th + .5); }
+    }
+  }
+  const a = Math.max(0, 0.35 * (1 - p * 1.6));  // un petit fantôme en filigrane tant qu'il reste peu d'image
+  if (a > 0) {
+    g.save(); g.globalAlpha = a; g.fillStyle = "#bcd4ff";
+    const cx = W / 2, cy = H * 0.44, r = W * 0.2;
+    g.beginPath(); g.arc(cx, cy, r, Math.PI, 0); g.lineTo(cx + r, cy + r * 1.5);
+    for (let k = 0; k < 4; k++) g.quadraticCurveTo(cx + r - (k + 0.5) * r / 2, cy + r * 1.1, cx + r - (k + 1) * r / 2, cy + r * 1.5);
+    g.closePath(); g.fill(); g.globalCompositeOperation = "destination-out"; g.beginPath();
+    g.arc(cx - r * 0.38, cy - r * 0.1, r * 0.17, 0, 7); g.arc(cx + r * 0.38, cy - r * 0.1, r * 0.17, 0, 7); g.fill(); g.restore();
+  }
+}
+function majFantome(f, p, k, requis) {
+  f.style.setProperty("--rev", p);
+  const pas = f.querySelector(".fant-pastille"), cpt = f.querySelector(".fant-compte");
+  if (pas) pas.textContent = p >= 0.999 ? "Révélée" : "Fantôme " + Math.round(p * 100) + " %";
+  if (cpt) cpt.textContent = k + " / " + requis;
+  f.dataset.rev = Math.round(p * 100);
+}
+function animerFantome(f) {  // à l'ouverture d'un booster : les nouveaux carreaux apparaissent
+  const d = f._fan;
+  if (!d || d.fait) return;
+  d.fait = true;
+  const fin = () => { dessinerMosaique(d.cv, d.c, d.img, d.p1); majFantome(f, d.p1, d.k1, d.requis); };
+  if (reduit || d.p1 === d.p0) return fin();
+  const t0 = performance.now(), duree = 1400;
+  const pas = (t) => {
+    const u = Math.min(1, (t - t0) / duree), e = u * u * (3 - 2 * u), p = d.p0 + (d.p1 - d.p0) * e;
+    dessinerMosaique(d.cv, d.c, d.img, p);
+    majFantome(f, p, u < 0.5 ? d.k0 : d.k1, d.requis);
+    if (u < 1) requestAnimationFrame(pas); else fin();
+  };
+  requestAnimationFrame(pas);
+}
 /* le profil public : pseudo, score, stats et vitrine (jamais les points de chaque carte) */
 function monProfil() {
   return { pseudo: compte.pseudo, ...JSON.parse(profilPy(JSON.stringify(etat), CARTES_TXT)) };
@@ -1158,9 +1284,25 @@ function faceCarte(c, o = {}) {
   const int = el("div", "int");
 
   const art = el("div", "art");
+  const fan = o.manquante ? null : o.fantome;
   if (o.manquante) {
     art.classList.add("sans-image");
     art.append(el("span", "grand", "?"));
+  } else if (fan) {
+    f.classList.add("fantome");
+    art.classList.add("fantome-art");
+    const cv = el("canvas", "fant");
+    cv.width = 250; cv.height = 350;
+    const img = new Image();
+    const p0 = pRevele(fan.avant !== undefined ? fan.avant : fan.k, fan.requis), p1 = pRevele(fan.k, fan.requis);
+    const dessiner = () => dessinerMosaique(cv, c, img, f._fan && f._fan.fait ? f._fan.p1 : p0);
+    img.addEventListener("load", dessiner);
+    img.addEventListener("error", dessiner);
+    img.src = c.image;
+    dessiner();
+    art.append(cv);
+    f._fan = { cv, c, img, p0, p1, k0: fan.avant !== undefined ? fan.avant : fan.k, k1: fan.k, requis: fan.requis, fait: false };
+    if (fan.avant === undefined) f._fan.fait = true;  // pas d'animation (collection, zoom…) : on affiche directement le palier
   } else {
     const img = new Image();
     img.alt = "";
@@ -1187,6 +1329,10 @@ function faceCarte(c, o = {}) {
   nom.style.fontSize = (c.nom.length > 16 ? 9.5 : c.nom.length > 11 ? 12 : 15) + "cqw";
   bas.append(nom);
   int.append(bas, el("i", "trait"), etoile());
+  if (fan) {
+    int.append(el("span", "fant-pastille"), el("i", "fant-compte"));
+    majFantome(f, pRevele(fan.avant !== undefined ? fan.avant : fan.k, fan.requis), fan.avant !== undefined ? fan.avant : fan.k, fan.requis);
+  }
 
   ext.append(int);
   if (r >= 4 && !o.manquante) ext.append(el("div", "reflet"));
@@ -1196,7 +1342,9 @@ function faceCarte(c, o = {}) {
   if (o.nouvelle) f.append(el("span", "badge", "Nouvelle"));
   else if (o.nouvelleFinition) f.append(el("span", "badge", "Nouvelle finition"));
   if (o.nb > 1) f.append(el("span", "badge nb", "×" + o.nb));
-  if (o.pieces > 0) f.append(el("span", "badge gain", "+" + pluriel(o.pieces, "pièce", "pièces")));
+  if (fan && fan.avant !== undefined) f.append(el("span", "badge gain", "Fantôme " + fan.k + "/" + fan.requis));
+  else if (o.doublon) f.append(el("span", "badge gain", "Doublon"));
+  if (f._fan && f._fan.fait) dessinerMosaique(f._fan.cv, f._fan.c, f._fan.img, f._fan.p1);
   return f;
 }
 
@@ -1240,6 +1388,13 @@ function ambiance(r) {  // la lumière derrière la scène prend la couleur de l
   else s.style.setProperty("--amb", `var(--rc${r})`);
 }
 
+function optionsTirage(c) {  // ce qu'il faut savoir pour dessiner une carte qui vient d'être tirée
+  return {
+    nouvelle: c.nouvelle, nouvelleFinition: c.nouvelle_finition, finition: c.finition, doublon: c.doublon,
+    fantome: c.revelation ? { k: c.revelation.apres, avant: c.revelation.avant, requis: c.revelation.requis } : null,
+  };
+}
+
 function carteBooster(c, i) {
   const b = el("button", "carte entre");
   b.type = "button";
@@ -1247,7 +1402,7 @@ function carteBooster(c, i) {
   b.setAttribute("aria-label", `Carte ${i + 1} sur ${tirage.length}, face cachée. Retourner.`);
   const tilt = el("span", "tilt");
   const flip = el("span", "flip");
-  flip.append(versoCarte(), faceCarte(c, { nouvelle: c.nouvelle, nouvelleFinition: c.nouvelle_finition, finition: c.finition, pieces: c.pieces }));
+  flip.append(versoCarte(), faceCarte(c, optionsTirage(c)));
   tilt.append(flip);
   b.append(tilt);
   b.addEventListener("click", avancer);
@@ -1338,15 +1493,19 @@ function majMessage() {
     if (!retournee) m.textContent = debut + "Clique sur la carte pour la retourner.";
     else if (c.nouvelle) m.textContent = debut + "Nouvelle carte !";
     else if (c.nouvelle_finition) m.textContent = debut + "Tu ne l'avais pas dans cette finition !";
-    else m.textContent = debut + `Un doublon : +${pluriel(c.pieces, "pièce", "pièces")}.`;
+    else if (c.revelation) {
+      const pct = Math.round(pRevele(c.revelation.apres, c.revelation.requis) * 100);
+      m.textContent = debut + `Carte fantôme : ${c.revelation.apres} / ${c.revelation.requis} exemplaires, ${pct} % révélée` + (c.revelation.apres >= c.revelation.requis ? " ! Elle est complète." : ".");
+    } else if (c.doublon) m.textContent = debut + `Un doublon : +${pluriel(c.pieces, "pièce", "pièces")}. Il reste aussi dans ton stock : tu peux le vendre au même prix ou l'utiliser pour améliorer une carte.`;
+    else m.textContent = debut;
   } else if (phase === "fini") {
     const n = tirage.filter((c) => c.nouvelle).length;
     let t = n ? `${pluriel(n, "nouvelle carte", "nouvelles cartes")} dans ce booster.` : "Que des doublons dans ce booster.";
     if (tirage.some((c) => c.rarete === "secrète")) t += " UNE CARTE SECRÈTE !";
     else if (tirage.some((c) => c.finition === "arc-en-ciel")) t += " Une carte arc-en-ciel !";
     else if (tirage.some((c) => c.finition === "brillante")) t += " Une carte brillante !";
-    const gain = tirage.reduce((s, c) => s + (c.pieces || 0), 0);
-    if (gain > 0) t += ` Tes doublons rapportent ${pluriel(gain, "pièce", "pièces")}.`;
+    const dbl = tirage.filter((c) => c.doublon).length;
+    if (dbl > 0) t += ` ${pluriel(dbl, "doublon", "doublons")} : +${pluriel(tirage.reduce((s, c) => s + (c.pieces || 0), 0), "pièce", "pièces")}, et ils restent en stock pour les vendre ou améliorer tes cartes (onglet Collection).`;
     if (dernierTest) t += " Mode test : rien n'est enregistré.";
     if (garantieDeclenchee) t += ` La garantie s'est déclenchée : une carte ${REGL.pitie_rarete} ou mieux t'était réservée.`;
     m.textContent = t;
@@ -1420,6 +1579,7 @@ function retournerCourante() {
   if (r === 5) revelationSecrete();
   else if (c.finition === "arc-en-ciel") flash("#ffffff");
   else if (r >= 3) flash(`var(--rc${r})`);
+  if (c.revelation) setTimeout(() => { const f = $("#courante .recto"); if (f) animerFantome(f); }, 450);
   majProgression();
   majBoutons();
   majMessage();
@@ -1448,7 +1608,9 @@ function carteResume(c, i) {
   conteneur.dataset.r = rang(c);
   conteneur.style.setProperty("--delai", i * 90 + "ms");
   const tilt = el("div", "tilt");
-  tilt.append(faceCarte(c, { nouvelle: c.nouvelle, nouvelleFinition: c.nouvelle_finition, finition: c.finition, pieces: c.pieces }));
+  const opt = optionsTirage(c);
+  if (opt.fantome) delete opt.fantome.avant;  // le résumé montre directement le palier atteint
+  tilt.append(faceCarte(c, opt));
   conteneur.append(tilt);
   activerInclinaison(conteneur);
   return conteneur;
@@ -1520,7 +1682,7 @@ function majReserve(a) {
 
 /* le temps passe : un booster gratuit de plus toutes les 15 minutes */
 function synchroniser() {
-  etat = JSON.parse(synchroPy(JSON.stringify(etat), Date.now()));
+  etat = synchro(etat, Date.now());
   sauvegarder();
   majStats();
   majPack();
@@ -1647,7 +1809,7 @@ function acheter(id) {
 }
 
 /* ---------- roue de la chance ---------- */
-const COULEURS_ROUE = { p10: "#d9a93a", p25: "#f2c14e", p50: "#ffd978", b1: "#4c9bff", x2: "#a85cff", x3: "#ff5fa8", x5: "#ff4458", rien: "#2a3948" };
+const COULEURS_ROUE = { p10: "#d9a93a", p25: "#f2c14e", p50: "#ffd978", b1: "#4c9bff", x2: "#a85cff", x3: "#ff5fa8", x5: "#ff4458", joker: "#7be0ff", rien: "#2a3948" };
 function dessinerRoue() {
   const NS = "http://www.w3.org/2000/svg";
   const svg = $("#roue");
@@ -1671,7 +1833,7 @@ function dessinerRoue() {
     t.setAttribute("text-anchor", "end");
     t.setAttribute("dominant-baseline", "central");
     t.setAttribute("font-size", g.poids >= 20 ? "12" : "10");
-    t.setAttribute("fill", g.id === "rien" ? "#8c9db0" : g.id.startsWith("p") ? "#1d1503" : "#ffffff");
+    t.setAttribute("fill", g.id === "rien" ? "#8c9db0" : g.id === "joker" ? "#06222b" : g.id.startsWith("p") && g.id !== "p" ? "#1d1503" : "#ffffff");
     t.textContent = g.court;
     svg.append(chemin, t);
     a0 = a1;
@@ -1687,14 +1849,52 @@ function dessinerRoue() {
 function majRoue() {
   if (!etat) return;
   const fait = etat.roue_jour === jourLocal();
-  $("#roue-btn").disabled = fait || roueEnCours;
-  if (!roueEnCours) $("#roue-compte").textContent = fait ? `Ton tour du jour est utilisé. Prochain tour à minuit, dans ${dureeLongue(resteAvantMinuit())}.` : "Ton tour du jour est disponible !";
+  const solde = etat.monnaie - gainRestant;
+  const btn = $("#roue-btn");
+  btn.textContent = fait ? `Tourner encore · ${REGL.prix_roue} pièces` : "Tourner la roue";
+  btn.disabled = roueEnCours || (fait && solde < REGL.prix_roue);
+  if (!roueEnCours) $("#roue-compte").textContent = fait
+    ? `Ton tour gratuit du jour est utilisé (il revient à minuit, dans ${dureeLongue(resteAvantMinuit())}). Tu peux encore tourner pour ${REGL.prix_roue} pièces.`
+    : "Ton tour gratuit du jour est disponible !";
+  majBonus();
+}
+
+function majBonus() {
+  const zone = $("#bonus-zone"), liste = $("#bonus-liste");
+  if (!zone || !etat) return;
+  const multis = etat.multis || {}, jokers = etat.jokers || 0;
+  const items = [];
+  for (const g of REGL.roue.filter((x) => x.multi)) {
+    const n = multis[String(g.multi)] || 0;
+    if (n <= 0) continue;
+    const it = el("div", "bonus-item");
+    it.append(el("b", "", `×${g.multi}`), el("span", "", `× ${n} · un booster gratuit toutes les ${dureeTxt(REGL.intervalle_ms / g.multi)} pendant ${Math.round(REGL.multi_duree_ms / 60000)} min`));
+    const b = el("button", "btn second", "Activer");
+    b.type = "button";
+    b.addEventListener("click", () => {
+      const r = JSON.parse(activerMultiPy(JSON.stringify(etat), g.multi, Date.now()));
+      if (r.erreur) { $("#bonus-msg").textContent = r.erreur; return; }
+      etat = r.etat; sauvegarder(); majStats(); majBonus();
+      $("#bonus-msg").textContent = `Multiplicateur ×${g.multi} activé !`;
+    });
+    it.append(b);
+    items.push(it);
+  }
+  if (jokers > 0) {
+    const it = el("div", "bonus-item");
+    it.append(el("b", "", "Joker"), el("span", "", `× ${jokers} · à utiliser depuis une carte fantôme (onglet Collection)`));
+    items.push(it);
+  }
+  zone.hidden = items.length === 0;
+  liste.replaceChildren(...items);
 }
 
 async function tournerRoue() {
-  if (roueEnCours || etat.roue_jour === jourLocal()) return;
+  if (roueEnCours) return;
+  const payant = etat.roue_jour === jourLocal();
+  if (payant && etat.monnaie - gainRestant < REGL.prix_roue) return;
   let r;
-  try { r = JSON.parse(roueurPy(JSON.stringify(etat), jourLocal(), Date.now())); }
+  try { r = JSON.parse(roueurPy(JSON.stringify(etat), jourLocal(), Date.now(), payant)); }
   catch (e) { console.error(e); $("#roue-resultat").textContent = "La roue a eu un souci."; return; }
   if (r.erreur) { $("#roue-resultat").textContent = r.erreur; return; }
   roueEnCours = true;
@@ -1717,7 +1917,8 @@ async function tournerRoue() {
   if (g.id === "rien") texte = "Rien cette fois… Reviens demain !";
   else if (g.pieces) texte = `Tu gagnes ${g.pieces} pièces !`;
   else if (g.boosters) texte = "Tu gagnes un booster !";
-  else texte = `Multiplicateur ×${g.multi} ! Un booster gratuit toutes les ${dureeTxt(REGL.intervalle_ms / g.multi)} pendant ${Math.round(REGL.multi_duree_ms / 60000)} minutes.`;
+  else if (g.joker) texte = "Joker fantôme ! Il est dans tes bonus : utilise-le depuis une carte fantôme (onglet Collection).";
+  else texte = `Multiplicateur ×${g.multi} ! Il est dans tes bonus : active-le quand tu veux (un booster gratuit toutes les ${dureeTxt(REGL.intervalle_ms / g.multi)} pendant ${Math.round(REGL.multi_duree_ms / 60000)} minutes).`;
   zone.append(texte);
   if (g.boosters) {
     zone.append(el("br"));
@@ -1856,7 +2057,7 @@ function ouvrirEnMasse() {
         const tr = el("tr"); tr.append(el("td", "", majuscule(n)), el("td", "", String(res.par_rarete[r]))); tab.append(tr);
       });
       bloc.append(tab);
-      bloc.append(el("p", "", `${res.finitions.brillante} brillantes · ${res.finitions["arc-en-ciel"]} arc-en-ciel · ${res.nouvelles} nouvelles cartes · ${res.pieces} pièces gagnées${test ? " (non gardées)" : ""}`));
+      bloc.append(el("p", "", `${res.finitions.brillante} brillantes · ${res.finitions["arc-en-ciel"]} arc-en-ciel · ${res.nouvelles} nouvelles cartes · ${pluriel(res.doublons, "doublon", "doublons")} (${res.pieces} pièces si tu les vends)${test ? " — rien n'est gardé" : ""}`));
       const top = res.meilleures.map((m) => ({ ...m, c: CARTES.find((x) => x.id === m.id) })).filter((m) => m.c)
         .sort((a, b) => rang(b.c) - rang(a.c) || (b.finition !== "normale") - (a.finition !== "normale") || a.c.id - b.c.id);
       const lourd = top.filter((m) => rang(m.c) >= 4 || m.finition === "arc-en-ciel");
@@ -1878,25 +2079,28 @@ function adminOuvrir(modes) {
 }
 
 /* ---------- collection ---------- */
-const exemplaires = (c) => {
-  const n = etat.collection[String(c.id)] || 0;
-  const f = etat.finitions[String(c.id)] || {};
-  const b = f["brillante"] || 0, a = f["arc-en-ciel"] || 0;
-  return { total: n, "normale": Math.max(n - b - a, 0), "brillante": b, "arc-en-ciel": a };
+const exemplaires = (c) => {  // ce qu'on voit : les exemplaires utilisables (les copies qui ont servi à révéler un fantôme ne comptent pas)
+  const l = copiesTriees(c);
+  const out = { "normale": 0, "brillante": 0, "arc-en-ciel": 0, total: 0 };
+  l.forEach((f, i) => { if (i === 0 || i >= requisDe(c)) { out[f]++; out.total++; } });
+  return out;
 };
-const meilleureFinition = (c) => {
-  const e = exemplaires(c);
-  return e["arc-en-ciel"] > 0 ? "arc-en-ciel" : e["brillante"] > 0 ? "brillante" : "normale";
-};
+const meilleureFinition = (c) => copiesTriees(c)[0] || "normale";
 
 function majCollection() {
-  const nb = (c) => etat.collection[String(c.id)] || 0;
+  const nb = (c) => ((etat.collection[String(c.id)] || 0) > 0 ? exemplaires(c).total : 0);
   const possedees = CARTES.filter((c) => nb(c) > 0).length;
   const brillantes = CARTES.filter((c) => exemplaires(c)["brillante"] > 0).length;
   const arcs = CARTES.filter((c) => exemplaires(c)["arc-en-ciel"] > 0).length;
   $("#t-compte").textContent = `${possedees}/${CARTES.length}`;
   $("#coll-titre").textContent = `${possedees} cartes sur ${CARTES.length}`;
   $("#coll-finitions").textContent = `${pluriel(brillantes, "carte brillante", "cartes brillantes")} · ${pluriel(arcs, "carte arc-en-ciel", "cartes arc-en-ciel")}`;
+  let nbD = 0, valD = 0;
+  for (const c of CARTES) { const st = stockDe(c); nbD += st.total; valD += st.valeur; }
+  $("#coll-doublons-txt").textContent = nbD
+    ? `${pluriel(nbD, "doublon", "doublons")} en stock (${valD} pièces si tu les vends tous). Ouvre une carte pour l'améliorer ou en vendre.`
+    : "Tu n'as aucun doublon en stock. Les cartes que tu tires en double arrivent ici : tu peux les vendre ou les utiliser pour améliorer tes cartes.";
+  $("#btn-vendre-tout").disabled = !nbD;
   $("#coll-jauge").style.width = (CARTES.length ? (possedees / CARTES.length) * 100 : 0) + "%";
 
   const pastille = (conteneur, libelle, actif, action, r) => {
@@ -1967,7 +2171,7 @@ function majCollection() {
     const conteneur = el(n ? "button" : "div", "carte-fixe");
     conteneur.dataset.r = rang(c);
     const tilt = el("div", "tilt");
-    tilt.append(faceCarte(c, { manquante: n === 0, nb: n, finition: meilleureFinition(c), paresseux: true }));
+    tilt.append(faceCarte(c, { manquante: n === 0, nb: n, finition: meilleureFinition(c), paresseux: true, fantome: infoFantome(c) }));
     conteneur.append(tilt);
     if (n === 0) {
       conteneur.setAttribute("aria-label", `Carte n° ${c.id}, pas encore trouvée`);
@@ -2004,7 +2208,7 @@ function rendreZoom() {
   const cont = el("div", "carte-fixe");
   cont.dataset.r = rang(c);
   const tilt = el("div", "tilt");
-  tilt.append(faceCarte(c, { finition: finZoom }));
+  tilt.append(faceCarte(c, { finition: finZoom, fantome: infoFantome(c) }));
   cont.append(tilt);
   activerInclinaison(cont);
   $("#zoom-carte").replaceChildren(cont);
@@ -2023,11 +2227,72 @@ function rendreZoom() {
     fins.append(b);
   }
 
-  const r = rang(c);
-  const valeur = Math.floor(REGL.valeurs[r] * (REGL.bonus[finZoom] || 1) + 0.5);
-  $("#zoom-valeur").textContent = `Un doublon de cette carte en version ${finZoom === "normale" ? "normale" : NOMS_FIN[finZoom].toLowerCase()} rapporte ${pluriel(valeur, "pièce", "pièces")}.`;
+  actionsZoom(c);
   $("#zoom-prec").disabled = listeZoom.length < 2;
   $("#zoom-suiv").disabled = listeZoom.length < 2;
+}
+
+function actionsZoom(c) {
+  const z = $("#zoom-actions");
+  z.replaceChildren();
+  const fan = infoFantome(c);
+  if (fan) {
+    const msgJ = el("p", "msg");
+    msgJ.setAttribute("aria-live", "polite");
+    z.append(el("p", "", `Carte fantôme : ${fan.k} / ${fan.requis} exemplaires. Chaque exemplaire que tu tires révèle une part de l'image.`));
+    const jokers = etat.jokers || 0;
+    const bj = el("button", "btn", `Utiliser un joker fantôme (${jokers})`);
+    bj.type = "button"; bj.disabled = jokers <= 0;
+    bj.addEventListener("click", () => {
+      const res = JSON.parse(jokerPy(JSON.stringify(etat), CARTES_TXT, c.id));
+      etat = res.etat;
+      if (res.erreur) { msgJ.textContent = res.erreur; return; }
+      sauvegarder(); majStats(); majCollection(); majBonus(); rendreZoom();
+      $("#zoom-actions .msg").textContent = "Joker utilisé : un exemplaire de plus !";
+    });
+    const btnsJ = el("div", "btns");
+    btnsJ.append(bj);
+    z.append(btnsJ, msgJ);
+    if (jokers <= 0) msgJ.textContent = "Tu n'as pas de joker fantôme. Tu peux en gagner à la roue de la chance.";
+    return;
+  }
+  const r = rang(c), stock = stockDe(c), actuelle = meilleureFinition(c);
+  const suivante = actuelle === "normale" ? "brillante" : actuelle === "brillante" ? "arc-en-ciel" : null;
+  const cout = suivante ? REGL.couts_amelioration[r][FINITIONS.indexOf(actuelle)] : null;
+  const msg = el("p", "msg");
+  msg.setAttribute("aria-live", "polite");
+  z.append(el("p", "", suivante
+      ? `Pour la passer en ${NOMS_FIN[suivante].toLowerCase()} : ${pluriel(cout, "doublon", "doublons")}.`
+      : "Cette carte est arc-en-ciel : c'est la finition maximale !"),
+    el("p", "", stock.total ? `Tu as ${pluriel(stock.total, "doublon", "doublons")} de cette carte.` : "Tu n'as pas de doublon de cette carte."));
+  const btns = el("div", "btns");
+  const agir = async (fonction, args, texte) => {
+    const res = JSON.parse(fonction(...args));
+    etat = res.etat;
+    if (res.erreur) { msg.textContent = res.erreur; return; }
+    if (res.finition) finZoom = res.finition;
+    sauvegarder(); majStats(); majPieces(); majCollection(); rendreZoom();
+    $("#zoom-actions .msg").textContent = texte(res);
+  };
+  if (suivante) {
+    const b = el("button", "btn", `Passer en ${NOMS_FIN[suivante].toLowerCase()} · ${pluriel(cout, "doublon", "doublons")}`);
+    b.type = "button"; b.disabled = stock.total < cout;
+    b.addEventListener("click", () => agir(ameliorerPy, [JSON.stringify(etat), CARTES_TXT, c.id], (res) => `Carte passée en ${NOMS_FIN[res.finition].toLowerCase()} !`));
+    btns.append(b);
+  }
+  if (stock.total > 0) {
+    const v1 = el("button", "btn second", `Vendre 1 · +${stock.premiere}`);
+    v1.type = "button";
+    v1.addEventListener("click", () => agir(ventePy, [JSON.stringify(etat), CARTES_TXT, c.id, 1], (res) => `+${pluriel(res.gain, "pièce", "pièces")}.`));
+    btns.append(v1);
+    if (stock.total > 1) {
+      const vt = el("button", "btn second", `Tout vendre · +${stock.valeur}`);
+      vt.type = "button";
+      vt.addEventListener("click", () => agir(ventePy, [JSON.stringify(etat), CARTES_TXT, c.id, 0], (res) => `+${pluriel(res.gain, "pièce", "pièces")}.`));
+      btns.append(vt);
+    }
+  }
+  z.append(btns, msg);
 }
 
 function naviguerZoom(sens) {
@@ -2107,13 +2372,20 @@ function rendreInfos() {
       tableau(["Offre", "Prix", "Contenu"], offres)),
   );
   infos.children[1].append(
-    bloc("Pièces gagnées avec un doublon", "Plus la carte est rare, plus elle rapporte, et les finitions rapportent un peu plus.",
+    bloc("Vendre un doublon", "Un doublon est une carte que tu as déjà. Quand tu le tires dans un booster, il te rapporte tout de suite des pièces (plus la carte est rare, plus elle rapporte, et les finitions rapportent un peu plus), sauf les exemplaires qui servent à révéler une carte fantôme. Il reste ensuite en stock : tu peux le revendre au même prix, ou l'utiliser pour améliorer une carte.",
       tableau(["Rareté", "Normale", "Brillante", "Arc-en-ciel"], valeurs)),
     bloc("Finitions", `Chaque carte tirée peut être brillante (${uneSur(REGL.chance_brillante)}) ou arc-en-ciel (${uneSur(REGL.chance_arc)}), quelle que soit sa rareté. ` +
       "La brillante a un reflet blanc qui balaie la carte. L'arc-en-ciel a un cadre et des reflets multicolores, d'autant plus marqués que la carte est rare."),
   );
+  const nbFant = CARTES.filter((c) => c.fantome).length;
+  infos.append(
+    bloc("Améliorer une carte", "Avec les doublons d'une carte, tu peux la faire passer de normale à brillante, puis de brillante à arc-en-ciel. Nombre de doublons à dépenser :",
+      tableau(["Rareté", "Vers brillante", "Vers arc-en-ciel"], REGL.ordre.map((nom, r) => ({ r, cellules: [majuscule(nom), ...REGL.couts_amelioration[r].map(String)] })))),
+  );
+  if (nbFant) infos.append(bloc("Cartes fantômes", `Certaines cartes (${nbFant} dans le jeu) sont des fantômes : quand tu les tires, on ne voit presque rien. Chaque exemplaire révèle une part de l'image, jusqu'à ce que tu aies tous les exemplaires. Un fantôme est révélé plus vite si sa rareté est élevée.`,
+    tableau(["Rareté", "Exemplaires pour tout révéler"], REGL.ordre.map((nom, r) => ({ r, cellules: [majuscule(nom), String(REGL.requis_fantome[r])] })))));
   const multis = REGL.roue.filter((g) => g.multi).map((g) => `×${g.multi} : un booster toutes les ${dureeTxt(REGL.intervalle_ms / g.multi)}`);
-  infos.append(bloc("Roue de la chance", `Un tour par jour, remis à zéro à minuit. Les multiplicateurs accélèrent tes boosters gratuits pendant ${Math.round(REGL.multi_duree_ms / 60000)} minutes (${multis.join(" ; ")}).`,
+  infos.append(bloc("Roue de la chance", `Un tour gratuit par jour (remis à zéro à minuit), puis autant de tours que tu veux pour ${REGL.prix_roue} pièces. Les multiplicateurs et les jokers fantômes gagnés sont mis de côté dans « Mes bonus » (onglet Boutique) : ils s'empilent et tu les utilises quand tu veux. Un joker fantôme ajoute un exemplaire à une carte fantôme (depuis la collection). Les multiplicateurs accélèrent tes boosters gratuits pendant ${Math.round(REGL.multi_duree_ms / 60000)} minutes (${multis.join(" ; ")}).`,
     tableau(["Récompense", "Chance"], REGL.roue.map((g) => ({ r: "", cellules: [g.texte, pourcent(g.poids / 100)] })))));
   if (REGL.pitie_apres) {
     infos.append(bloc("Garantie", `Si tu n'as pas eu de carte ${REGL.pitie_rarete} ou mieux pendant ${REGL.pitie_apres} boosters, le suivant en contient une.`));
@@ -2224,6 +2496,7 @@ function ouvrirProfil(uid) {
   stat(String(p.boosters), "Boosters ouverts");
   stat(String(p.brillantes), "Cartes brillantes");
   stat(String(p.arcs), "Cartes arc-en-ciel");
+  if (p.fantomes_total) stat(`${p.fantomes}/${p.fantomes_total}`, "Cartes fantômes révélées");
   const detail = el("p", "sous", REGL.ordre.map((n, r) => `${majuscule(n)} ${p.par_rarete[r]}`).join(" · "));
 
   const vit = el("div", "vitrine");
@@ -2251,7 +2524,7 @@ function preparerChoixVitrine(choix, vit) {
     info.textContent = `${sel.length} / 3 choisie${sel.length > 1 ? "s" : ""}`;
     boutons.forEach(([b, c]) => b.setAttribute("aria-pressed", String(sel.includes(c.id))));
   };
-  CARTES.filter((c) => (etat.collection[String(c.id)] || 0) > 0)
+  CARTES.filter((c) => (etat.collection[String(c.id)] || 0) > 0 && !infoFantome(c))
     .sort((a, b) => rang(b) - rang(a) || a.id - b.id)
     .forEach((c) => {
       const b = el("button", "carte-fixe");
@@ -2307,7 +2580,11 @@ async function texte(url) {
   return r.text();
 }
 
-let massePy = null, profilPy = null, synchroPy = null, acheterPy = null, nouvelEtatPy = null, attentePy = null, roueurPy = null, codePy = null;
+function synchro(e, t) {  // temps qui passe + mise à niveau d'une ancienne sauvegarde (inventaire des exemplaires)
+  const r = JSON.parse(synchroPy(JSON.stringify(e), t));
+  return normaliserPy && CARTES_TXT ? JSON.parse(normaliserPy(JSON.stringify(r), CARTES_TXT)) : r;
+}
+let activerMultiPy = null, jokerPy = null, normaliserPy = null, ventePy = null, venteToutPy = null, ameliorerPy = null, massePy = null, profilPy = null, synchroPy = null, acheterPy = null, nouvelEtatPy = null, attentePy = null, roueurPy = null, codePy = null;
 let moteurPret = null;
 let modeConnexion = "connecter";
 let minuteurHorloge = null;
@@ -2321,13 +2598,19 @@ async function chargerMoteur() {
   const g = (nom) => pyodide.globals.get(nom);
   ouvrirPy = g("ouvrir_booster_web");
   synchroPy = g("synchroniser_web");
+  normaliserPy = g("normaliser_web");
   acheterPy = g("acheter_web");
   nouvelEtatPy = g("nouvel_etat_web");
   attentePy = g("attente_web");
   roueurPy = g("tourner_roue_web");
+  activerMultiPy = g("activer_multi_web");
+  jokerPy = g("joker_web");
   codePy = g("utiliser_code_web");
   profilPy = g("profil_web");
   massePy = g("ouvrir_masse_web");
+  ventePy = g("vendre_web");
+  venteToutPy = g("vendre_tous_web");
+  ameliorerPy = g("ameliorer_web");
   REGL = JSON.parse(g("reglages_web")());
 
   $("#pack-nb").textContent = pluriel(REGL.taille_booster, "carte", "cartes");
@@ -2386,7 +2669,7 @@ async function entrer(session) {
   let brut = distant;
   if (cache && (!distant || (cache.maj || 0) > (distant.maj || 0))) brut = cache;
   if (!brut) brut = JSON.parse(nouvelEtatPy(maintenant));
-  etat = JSON.parse(synchroPy(JSON.stringify(brut), maintenant));
+  etat = synchro(brut, maintenant);
 
   $("#st-pseudo").textContent = session.pseudo;
   $("#puce-compte").hidden = false;
@@ -2430,7 +2713,7 @@ async function rafraichirDepuisLeCompte() {
   try {
     const d = await backend.charger();
     if (d && (d.maj || 0) > (etat.maj || 0) && !aEnvoyer && (phase === "pret" || phase === "fini")) {
-      etat = JSON.parse(synchroPy(JSON.stringify(d), Date.now()));
+      etat = synchro(d, Date.now());
       ecrire(CLE_CACHE + compte.uid, JSON.stringify(etat));
       majStats(); majCollection(); rendreBoutique(); majBoutons();
       if (phase === "pret") majMessage();
@@ -2494,6 +2777,13 @@ document.querySelectorAll(".coll-cols button").forEach((b) => b.addEventListener
   nbCols = Number(b.dataset.n); colonnes(nbCols);
   try { localStorage.setItem("boosters-colonnes", String(nbCols)); } catch (_) { /* tant pis */ }
 }));
+$("#btn-vendre-tout").addEventListener("click", () => {
+  let nbD = 0, valD = 0;
+  for (const c of CARTES) { const st = stockDe(c); nbD += st.total; valD += st.valeur; }
+  if (!nbD || !confirm(`Vendre ${nbD} doublons pour ${valD} pièces ? Tu ne pourras plus les utiliser pour améliorer tes cartes.`)) return;
+  const res = JSON.parse(venteToutPy(JSON.stringify(etat), CARTES_TXT));
+  etat = res.etat; sauvegarder(); majStats(); majPieces(); majCollection();
+});
 $("#coll-tri").addEventListener("change", (e) => { triColl = e.target.value; majCollection(); });
 $("#coll-serie").addEventListener("change", (e) => { serieColl = e.target.value; majCollection(); });
 $("#t-classement").addEventListener("click", () => onglet("classement"));
